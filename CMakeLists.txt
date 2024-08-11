@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.5)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 project(GJGE VERSION 0.1 LANGUAGES CXX )
 
@@ -41,36 +41,7 @@ if(ENABLE_SANITIZER)
     endif()
 endif()
 
-option(ENABLE_CLANG_TIDY "Enable clang-tidy" ON)
-if(ENABLE_CLANG_TIDY)
-    message("- CLANG-TIDY ENABLED")
-    find_program(CLANG_TIDY_EXE NAMES "clang-tidy")
-    if(CLANG_TIDY_EXE)
-        set(CMAKE_CXX_CLANG_TIDY
-                "${CLANG_TIDY_EXE};--config-file=${CMAKE_SOURCE_DIR}/.clang-tidy;--use-color"
-        )
-    else()
-        message(
-                WARNING
-                "The option ENABLE_CLANG_TIDY is set but clang-tidy executable is not found."
-        )
-    endif()
-endif()
-
-option(ENABLE_CPPCHECK "Enable cppcheck" ON)
-if(ENABLE_CPPCHECK)
-    message("- CPPCHECK ENABLED")
-    find_program(CPPCHECK_EXE NAMES "cppcheck")
-    if(CPPCHECK_EXE)
-        set(CMAKE_CXX_CPPCHECK "${CPPCHECK_EXE};--enable=all;--inconclusive")
-    else()
-        message(
-                WARNING
-                "The option ENABLE_CPPCHECK is set but cppcheck executable is not found."
-        )
-    endif()
-endif()
-
 add_subdirectory(external)
-add_subdirectory(game)
 add_subdirectory(engine)
+add_subdirectory(game)
+

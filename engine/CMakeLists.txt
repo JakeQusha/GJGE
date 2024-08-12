@@ -1,7 +1,4 @@
-file(GLOB_RECURSE GJGE_SOURCES  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/assets/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/gui/*.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/components/*.cpp)
+file(GLOB_RECURSE GJGE_SOURCES  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_library(GJGE ${GJGE_SOURCES})
 target_link_libraries(GJGE Entt raylib Imgui Enet)
 target_include_directories(GJGE PUBLIC

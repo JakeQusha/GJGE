@@ -1,118 +1,38 @@
 #pragma once
-#include <cstdint>
-#include <raylib.h>
-#include <array>
-#include <entt.hpp>
 
-namespace an {
+#include <tuple>
+#include <unordered_map>
+#include <type_traits>
 
-enum class TextureEnum {
-    PLAYER_TEXTURE,
-    MAIN_CHAR,
-    BASE_CHARACTER,
-    CHARACTER_SHIRT_1,
-    CHARACTER_SHIRT_2,
-    CHARACTER_SHIRT_4,
-    CHARACTER_PANTS_1,
-    CHARACTER_PANTS_2,
-    CHARACTER_PANTS_4,
-    CHARACTER_HAIR_1,
-    CHARACTER_HAIR_2,
-    CHARACTER_HAIR_4,
-    TEST_TILE,
-    TREE1,
-    TREE2,
-    ROCK1,
-    ROCK2,
-    BUSH,
-    BIN,
-    LAMP,
-    BENCH,
-    DRUNK_PARTICLE,
-    STINKY_PARTICLE,
-    B_SUS,
-    B_LEGIT,
-    B_BACK,
-    UI_BACKGROUND,
-    CITY_TILE_N,
-    CITY_TILE_NE,
-    CITY_TILE_NW,
-    CITY_TILE_W,
-    CITY_TILE_SQUARE,
-    CITY_TILE_E,
-    CITY_HOUSES_N,
-    CITY_HOUSES_N2,
-    CITY_HOUSES_NE,
-    CITY_HOUSES_NE2,
-    CITY_HOUSES_NW,
-    CITY_HOUSES_NW2,
-    MARKER,
-    BULLET,
-    STICK,
-    SEESAW,
-    HAMMER,
-    NAIL,
-    BOBER,
-    DIALOG_CLOUD,
-    CORPSE,
-    DROPS,
-    GAME_OVER,
-    WIN,
-    CNT
-};
-enum class SoundEnum { WIN = 0, CNT };
+namespace ge {
+    template<typename... Types>
+    class AssetManager {
+        std::tuple<std::unordered_map<const char *, Types>...> assets;
 
-struct TextureAsset {
-    Texture2D texture;
-    uint16_t cell_size_x;
-    uint16_t cell_size_y;
+        template<typename T, typename... Rest>
+        struct are_unique : std::integral_constant<bool,
+                (!std::is_same<T, Rest>::value && ...) && are_unique<Rest...>::value> {
+        };
+        template<typename T>
+        struct are_unique<T> : std::true_type {
+        };
+        static_assert(are_unique<Types...>::value, "All types must be unique");
 
-    [[nodiscard]] Rectangle rect(uint16_t sprite_id, bool flip_h, bool flip_v) const {
-        auto columns_in_texture = texture.width / cell_size_x;
-
-        auto row = sprite_id / columns_in_texture;
-        auto column = sprite_id % columns_in_texture;
-
-        int width = cell_size_x;
-        if (flip_h) {
-            width = -width;
+    public:
+        template<typename T>
+        T &get(const char *id) {
+            return std::get<std::unordered_map<const char *, T>>(assets).at(id);
         }
 
-        int height = cell_size_y;
-        if (flip_v) {
-            height = -height;
+        template<typename T>
+        void add(const char *id, T &&asset) {
+            std::get<std::unordered_map<const char *, T>>(assets)[id] = std::forward<T>(asset);
         }
 
-        return Rectangle{.x = static_cast<float>(column * cell_size_x),
-                         .y = static_cast<float>(row * cell_size_y),
-                         .width = static_cast<float>(width),
-                         .height = static_cast<float>(height)};
-    }
+        template<typename T>
+        void add(const char *id, T asset) {
+            std::get<std::unordered_map<const char *, T>>(assets)[id] = std::move(asset);
+        }
 
-    void unload() {
-        UnloadTexture(texture);
-        texture.id = 0;
-    }
-};
-
-class AssetManager {
-  public:
-    void register_texture(const Image &image, TextureEnum id);
-    void register_texture(const Image &image, TextureEnum id, uint16_t cell_size_x, uint16_t cell_size_y);
-    auto get_texture(TextureEnum id) -> TextureAsset;
-    auto get_texture_ptr(TextureEnum id) -> TextureAsset*;
-    void register_sound(const Sound &sound, const SoundEnum id);
-    auto get_sound(const SoundEnum id) -> Sound;
-
-  private:
-    std::array<TextureAsset, static_cast<size_t>(TextureEnum::CNT)> textures;
-    std::array<Sound, static_cast<size_t>(SoundEnum::CNT)> sounds;
-};
-
-/*
-create_bullet() {
-    emplace<Sprite>(registry, bullet, bullet_sprite);
+    };
 }
-*/
-
-} // namespace an

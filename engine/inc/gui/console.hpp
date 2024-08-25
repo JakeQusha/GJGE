@@ -134,12 +134,12 @@ namespace ge {
             return 0;
         }
 
-        void parse_command(std::unique_ptr<char[]> &command, const char *command_w_params, Params &params) {
+        bool parse_command(std::unique_ptr<char[]> &command, const char *command_w_params, Params &params) {
             const char *first_space = strchr(command_w_params, ' ');
             if (!first_space) {
                 command = std::make_unique<char[]>(strlen(command_w_params) + 1);
                 strcpy(command.get(), command_w_params);
-                return;
+                return true;
             }
             size_t len = static_cast<size_t>(first_space - command_w_params);
             command = std::make_unique<char[]>(len + 1);
@@ -148,8 +148,31 @@ namespace ge {
             command_w_params += len + 1;
             std::string param;
             bool in_quotes = false;
+            char next;
             while (*command_w_params) {
                 switch (*command_w_params) {
+                    case '\\':
+                        next =*(command_w_params + 1);
+                        switch (next) {
+                            case '\\':
+                            case '"':
+                            case ' ':
+                                param.push_back(*(command_w_params + 1));
+                                command_w_params++;
+                                break;
+                            case 'n':
+                                param.push_back('\n');
+                                command_w_params++;
+                                break;
+                            default:
+                                if(isdigit(next)){
+                                    param.push_back(static_cast<char>(next-'0'));
+                                    command_w_params++;
+                                    break;
+                                }
+                                return false;
+                        }
+                        break;
                     case ' ':
                         if (in_quotes) {
                             param.push_back(*command_w_params);
@@ -169,9 +192,13 @@ namespace ge {
                 }
                 command_w_params++;
             }
+            if(in_quotes){
+                return false;
+            }
             if (!param.empty()) {
                 params.emplace_back(std::move(param));
             }
+            return true;
         }
 
         void execute_command(const char *command_w_params) {
@@ -179,7 +206,10 @@ namespace ge {
             add_log_command(ge::LogLevel::NONE, std::format("# {}", command_w_params).c_str());
             Params params;
             std::unique_ptr<char[]> command;
-            parse_command(command, command_w_params, params);
+            if(!parse_command(command, command_w_params, params)){
+                add_log_command(ge::LogLevel::ERR, "Syntax Error");
+                return;
+            };
             add_log(ge::LogLevel::DEBUG, command.get());
             //log params
             for (const auto &param: params) {

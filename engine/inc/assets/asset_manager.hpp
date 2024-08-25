@@ -20,7 +20,7 @@ namespace ge {
 
     public:
         template<typename T>
-        T &get(const char *id) {
+        [[nodiscard]]T &get(const char *id) {
             return std::get<std::unordered_map<const char *, T>>(assets).at(id);
         }
 

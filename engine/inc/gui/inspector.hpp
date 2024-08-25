@@ -32,6 +32,7 @@ namespace ge {
 
     template<InspectableComponent... Component>
     struct Inspector {
+        static constexpr auto name = "Inspector";
         static constexpr auto EntityDragDropTypeName = "Entity";
         static constexpr auto ComponentDragdropTypeName = "Component";
         std::variant<Component..., std::monostate> generated_component = std::monostate{};
@@ -48,7 +49,7 @@ namespace ge {
             if (!is_open) {
                 return;
             }
-            if (!ImGui::Begin("Inspector", &is_open, ImGuiWindowFlags_None))[[unlikely]] {
+            if (!ImGui::Begin(name, &is_open, ImGuiWindowFlags_None))[[unlikely]] {
                 ImGui::End();
                 return;
             }
@@ -67,7 +68,7 @@ namespace ge {
             ImGui::BeginGroup();
             ImVec2 rightColumnSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
             if (!current_entity) {
-                ImGui::SetCursorPosX(ImGui::GetWindowWidth()-rightColumnSize.x/2-70);
+                ImGui::SetCursorPosX(ImGui::GetWindowWidth() - rightColumnSize.x / 2 - 70);
                 ImGui::Text("No entity selected");
                 ImGui::PopStyleVar();
                 ImGui::EndGroup();
@@ -178,11 +179,12 @@ namespace ge {
         void display_entity_list_entry(entt::entity entity) {
             auto *const ii = registry.try_get<InspectorIntegration>(entity);
 
-            const auto name = std::format("{} ({})", (uint32_t) entity, ii != nullptr ? ii->debug_name : "unknown");
-            if(!filter.PassFilter(name.c_str())){
+            const auto entity_name = std::format("{} ({})", (uint32_t) entity,
+                                                 ii != nullptr ? ii->debug_name : "unknown");
+            if (!filter.PassFilter(entity_name.c_str())) {
                 return;
             }
-            if (ImGui::Selectable(name.c_str(), current_entity == entity, ImGuiSelectableFlags_SelectOnClick)) {
+            if (ImGui::Selectable(entity_name.c_str(), current_entity == entity, ImGuiSelectableFlags_SelectOnClick)) {
                 if (ImGui::IsMouseClicked(0)) {
                     current_entity = entity;
                 }
@@ -190,7 +192,7 @@ namespace ge {
 
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
-                ImGui::SeparatorText(name.c_str());
+                ImGui::SeparatorText(entity_name.c_str());
                 iterate_components([&]<InspectableComponent Comp>() {
                     if (!registry.all_of<Comp>(entity)) {
                         return;
@@ -233,8 +235,8 @@ namespace ge {
 
             ImGui::BeginGroup();
             ImGui::Text("Entity: %d", (int) entity);
-            if (auto *name = registry.try_get<InspectorIntegration>(entity)) {
-                ImGui::Text("Name: %s", name->debug_name.c_str());
+            if (auto *ii = registry.try_get<InspectorIntegration>(entity)) {
+                ImGui::Text("Name: %s", ii->debug_name.c_str());
             }
             ImGui::EndGroup();
 

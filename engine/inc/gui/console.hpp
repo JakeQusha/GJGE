@@ -84,6 +84,7 @@ namespace ge {
             bool show_debug = false;
         } log_filter;
     public:
+        static constexpr auto name = "Console";
         bool is_open = false;
 
         void add_log(LogLevel ll, const char *message) {
@@ -213,7 +214,7 @@ namespace ge {
             using namespace ImGui;
             //init
             SetWindowSize(ImVec2(200, 200));
-            if (!Begin("Console", &is_open, ImGuiWindowFlags_None))[[unlikely]] {
+            if (!Begin(name, &is_open, ImGuiWindowFlags_None))[[unlikely]] {
                 End();
                 return;
             }

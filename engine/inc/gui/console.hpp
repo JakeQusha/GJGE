@@ -23,7 +23,8 @@ namespace ge {
     };
 
     template<ConsoleCommand ...AvailableCommand>
-    struct Console {
+    class Console {
+
         struct Log {
             LogLevel ll;
             char *log;
@@ -75,22 +76,18 @@ namespace ge {
         char input_buffer[input_buffer_size] = {};
         ImGuiTextFilter filter;
         bool reclaim_focus = false;
-        bool is_open = false;
         bool auto_scroll = true;
         bool show_logs = true;
-
         struct {
             bool show_err = true;
             bool show_info = true;
             bool show_debug = false;
         } log_filter;
+    public:
+        bool is_open = false;
 
         void add_log(LogLevel ll, const char *message) {
             log_history.emplace_back(ll, message, false);
-        }
-
-        void add_log_command(LogLevel ll, const char *message) {
-            log_history.emplace_back(ll, message, true);
         }
 
         explicit Console(entt::registry &registry) : registry(registry) {
@@ -99,6 +96,11 @@ namespace ge {
 
         void clean_logs() {
             log_history.clear();
+        }
+
+    private:
+        void add_log_command(LogLevel ll, const char *message) {
+            log_history.emplace_back(ll, message, true);
         }
 
         int text_edit(ImGuiInputTextCallbackData *data) {
@@ -205,6 +207,7 @@ namespace ge {
 
         }
 
+    public:
         void draw_gui() {
             if (!is_open)return;
             using namespace ImGui;

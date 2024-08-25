@@ -7,11 +7,11 @@
 #include <variant>
 
 namespace ge {
-    struct DebugName {
-        std::string name;
+    struct InspectorIntegration {
+        std::string debug_name;
     };
 
-    template <typename T>
+    template<typename T>
     concept InspectableComponent = requires(T t, entt::registry &registry, entt::entity entity) {
         { T::name } -> std::convertible_to<const char *>;
         { t.inspect(registry, entity) };
@@ -21,7 +21,8 @@ namespace ge {
         { std::is_empty_v<T> };
     };
 
-    template <InspectableComponent T> void inspect(T &t, entt::registry &registry, entt::entity entity) {
+    template<InspectableComponent T>
+    void inspect(T &t, entt::registry &registry, entt::entity entity) {
         if constexpr (std::is_empty_v<T>) {
             T::inspect();
         } else {
@@ -29,35 +30,50 @@ namespace ge {
         }
     }
 
-    template <InspectableComponent... Component> struct Inspector {
+    template<InspectableComponent... Component>
+    struct Inspector {
         static constexpr auto EntityDragDropTypeName = "Entity";
         static constexpr auto ComponentDragdropTypeName = "Component";
-        explicit Inspector(entt::registry *registry) : registry(registry) {}
+        std::variant<Component..., std::monostate> generated_component = std::monostate{};
+        entt::registry &registry;
+        std::array<bool, sizeof...(Component)> component_filter{};
+        ImGuiTextFilter filter;
+        bool is_open = false;
+
+        explicit Inspector(entt::registry &registry) : registry(registry) {}
 
         std::optional<entt::entity> current_entity;
+
         void draw_gui() {
-            ImGui::Begin("Inspector");
-
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0, 0)); // Optional: reduce spacing between items
-
-            // Split main window horizontally
-            ImGui::BeginGroup();
-            display_entity_list(ImVec2(ImGui::GetContentRegionAvail().x * (2.f / 5.f), ImGui::GetContentRegionAvail().y));
-            ImGui::EndGroup();
-
-            ImGui::SameLine();
-
-            if (!current_entity) {
-                ImGui::Text("No entity selected");
-                ImGui::PopStyleVar();
+            if (!is_open) {
+                return;
+            }
+            if (!ImGui::Begin("Inspector", &is_open, ImGuiWindowFlags_None))[[unlikely]] {
                 ImGui::End();
                 return;
             }
 
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(5.f, 0)); // Optional: reduce spacing between items
+
+            // Split main window horizontally
+            ImGui::BeginGroup();
+            display_entity_list(
+                    ImVec2(ImGui::GetContentRegionAvail().x * (2.f / 5.f), ImGui::GetContentRegionAvail().y));
+            ImGui::EndGroup();
+
+            ImGui::SameLine();
+
             // Begin right column
             ImGui::BeginGroup();
             ImVec2 rightColumnSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
-
+            if (!current_entity) {
+                ImGui::SetCursorPosX(ImGui::GetWindowWidth()-rightColumnSize.x/2-70);
+                ImGui::Text("No entity selected");
+                ImGui::PopStyleVar();
+                ImGui::EndGroup();
+                ImGui::End();
+                return;
+            }
             const auto entity_list_size = ImVec2(rightColumnSize.x, rightColumnSize.y * 3.f / 5.f);
             display_entity_info(entity_list_size);
 
@@ -65,44 +81,52 @@ namespace ge {
             display_component_creator();
 
             ImGui::PopStyleVar();
+            ImGui::EndGroup();
             ImGui::End();
         }
 
     private:
         void display_entity_list(ImVec2 size) {
             ImGui::BeginChild("Entity list", size, 1);
-            ImGui::SeparatorText("Toggle components");
-
             auto i = 0u;
-            ([&]() { ImGui::Checkbox(Component::name, &component_filter[i++]); }(), ...);
-
+            if (ImGui::BeginPopup("Components")) {
+                ([&]() { ImGui::Checkbox(Component::name, &component_filter[i++]); }(), ...);
+                ImGui::EndPopup();
+            }
+            auto create_new_entity = [&]() {
+                const auto entity = registry.create();
+                registry.emplace<InspectorIntegration>(entity, "New entity");
+            };
+            if (ImGui::Button("Create new entity")) {
+                create_new_entity();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Components")) {
+                ImGui::OpenPopup("Components");
+            }
+            ImGui::SameLine();
+            filter.Draw("Filter", -50);
             ImGui::SeparatorText("Entity List");
-            for (auto entity : registry->view<entt::entity>()) {
+            for (auto entity: registry.view<entt::entity>()) {
                 i = 0u;
-                bool has_toggled_components =
-                        ([&]() { return !component_filter[i++] || registry->all_of<Component>(entity); }() && ...);
-
-                if (!has_toggled_components) {
+                if (!([&]() { return !component_filter[i++] || registry.all_of<Component>(entity); }() && ...)) {
                     continue;
                 }
-
                 display_entity_list_entry(entity);
             }
-
-//            if (ImGui::BeginPopupContextWindow()) {
-//                if (ImGui::MenuItem("Create new entity")) {
-//                    const auto entity = registry->create();
-//                    an::emplace<an::DebugName>(*registry, entity, "New entity");
-//                }
-//                ImGui::EndPopup();
-//            }
+            if (ImGui::BeginPopupContextWindow()) {
+                if (ImGui::MenuItem("Create new entity")) {
+                    create_new_entity();
+                }
+                ImGui::EndPopup();
+            }
 
             ImGui::EndChild();
         }
 
         void display_component_creator() {
 
-            ImGui::PushID((int)generated_component.index());
+            ImGui::PushID((int) generated_component.index());
             ImGui::BeginChild("Component creator", ImVec2(0, 0), 1);
             ImGui::SeparatorText("Component creator");
 
@@ -143,21 +167,22 @@ namespace ge {
 
             std::visit(entt::overloaded{
                                [&](std::monostate) { ImGui::Text("No component selected"); },
-                               [&](auto &component) { inspect(component, *registry, entt::null); },
+                               [&](auto &component) { inspect(component, registry, entt::null); },
                        },
                        generated_component);
 
             ImGui::EndChild();
-            ImGui::EndGroup();
             ImGui::PopID();
         }
 
         void display_entity_list_entry(entt::entity entity) {
-            auto *const name = registry->try_get<DebugName>(entity);
+            auto *const ii = registry.try_get<InspectorIntegration>(entity);
 
-            const auto text = std::format("{} ({})", (int)entity, name != nullptr ? name->name : "unknown");
-
-            if (ImGui::Selectable(text.c_str(), current_entity == entity, ImGuiSelectableFlags_SelectOnClick)) {
+            const auto name = std::format("{} ({})", (uint32_t) entity, ii != nullptr ? ii->debug_name : "unknown");
+            if(!filter.PassFilter(name.c_str())){
+                return;
+            }
+            if (ImGui::Selectable(name.c_str(), current_entity == entity, ImGuiSelectableFlags_SelectOnClick)) {
                 if (ImGui::IsMouseClicked(0)) {
                     current_entity = entity;
                 }
@@ -165,9 +190,9 @@ namespace ge {
 
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
-                ImGui::SeparatorText(text.c_str());
+                ImGui::SeparatorText(name.c_str());
                 iterate_components([&]<InspectableComponent Comp>() {
-                    if (!registry->all_of<Comp>(entity)) {
+                    if (!registry.all_of<Comp>(entity)) {
                         return;
                     }
                     ImGui::Text(Comp::name);
@@ -199,33 +224,33 @@ namespace ge {
 //                ImGui::EndDragDropTarget();
 //            }
             if (ImGui::Button("Delete")) {
-                registry->destroy(entity);
+                registry.destroy(entity);
                 current_entity = std::nullopt;
-                ImGui::EndChild();
                 return;
             }
 
             ImGui::SeparatorText("Entity data");
 
             ImGui::BeginGroup();
-            ImGui::Text("Entity: %d", (int)entity);
-            if (auto *name = registry->try_get<DebugName>(entity)) {
-                ImGui::Text("Name: %s", name->name.c_str());
+            ImGui::Text("Entity: %d", (int) entity);
+            if (auto *name = registry.try_get<InspectorIntegration>(entity)) {
+                ImGui::Text("Name: %s", name->debug_name.c_str());
             }
             ImGui::EndGroup();
 
             display_components(entity);
 
-            ImGui::EndChild();
+            //ImGui::EndChild();
 
 //
+
         }
 
         void display_components(entt::entity entity) {
             ImGui::SeparatorText("Components");
 
             iterate_components([&]<InspectableComponent Comp>() {
-                if (!registry->all_of<Comp>(entity)) {
+                if (!registry.all_of<Comp>(entity)) {
                     return;
                 }
 
@@ -236,7 +261,7 @@ namespace ge {
                 // Create a popup menu on right-click
                 if (ImGui::BeginPopupContextItem("component_context_menu")) {
                     if (ImGui::MenuItem("Delete")) {
-                        registry->remove<Comp>(entity);
+                        registry.remove<Comp>(entity);
                         ImGui::CloseCurrentPopup();
                     }
                     ImGui::EndPopup();
@@ -246,18 +271,14 @@ namespace ge {
                     if constexpr (std::is_empty_v<Comp>) {
                         Comp::inspect();
                     } else {
-                        auto &component = registry->get<Comp>(entity);
-                        component.inspect(*registry, entity);
+                        auto &component = registry.get<Comp>(entity);
+                        component.inspect(registry, entity);
                     }
                 }
 
                 ImGui::PopID();
             });
         }
-
-        std::variant<Component..., std::monostate> generated_component = std::monostate{};
-        entt::registry *registry;
-        std::array<bool, sizeof...(Component)> component_filter{};
     };
 
 } // namespace an

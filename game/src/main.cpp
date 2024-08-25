@@ -29,13 +29,16 @@ auto main() -> int {
     SetExitKey(KEY_DELETE);
     rlImGuiSetup(true);
     auto registry = entt::registry();
-    auto inspector = ge::Inspector<Alive>(&registry);
+    auto inspector = ge::Inspector<Alive>(registry);
     auto console = ge::Console<ge::hi_command,ge::echo_command>(registry);
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
     auto entity = registry.create();
     registry.emplace<Alive>(entity);
     key_manager.subscribe(ge::KeyboardEvent::PRESS,KEY_RIGHT_BRACKET,[&](){
         console.is_open = !console.is_open;
+    });
+    key_manager.subscribe(ge::KeyboardEvent::PRESS,KEY_LEFT_BRACKET,[&](){
+        inspector.is_open = !inspector.is_open;
     });
     key_manager.subscribe(ge::KeyboardEvent::PRESS,KEY_Q,[&](){
         console.add_log(ge::LogLevel::INFO,"TEST");

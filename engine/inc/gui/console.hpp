@@ -209,7 +209,7 @@ namespace ge {
             if(!parse_command(command, command_w_params, params)){
                 add_log_command(ge::LogLevel::ERR, "Syntax Error");
                 return;
-            };
+            }
             add_log(ge::LogLevel::DEBUG, command.get());
             //log params
             for (const auto &param: params) {

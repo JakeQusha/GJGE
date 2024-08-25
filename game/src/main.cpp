@@ -42,10 +42,11 @@ auto main() -> int {
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
     auto entity = registry.create();
     registry.emplace<Alive>(entity);
-    key_manager.subscribe(ge::KeyboardEvent::PRESS, KEY_Q, [&]() {
+    key_manager.assign_key(KEY_D, "essing");
+    key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() {
         console.add_log(ge::LogLevel::INFO, "TEST");
     });
-
+    key_manager.assign_key(KEY_Q, "essing");
     //auto &asset_manager = registry.ctx().emplace<ge::AssetManager<Texture,Sound>>();
 
 

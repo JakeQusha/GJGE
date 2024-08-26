@@ -49,18 +49,34 @@ namespace ge {
             if (!is_open) {
                 return;
             }
-            if (!ImGui::Begin(name, &is_open, ImGuiWindowFlags_None))[[unlikely]] {
+            ImGui::SetNextWindowSize(ImVec2(600, 500), ImGuiCond_FirstUseEver);
+            if (!ImGui::Begin(name, &is_open, ImGuiWindowFlags_MenuBar))[[unlikely]] {
                 ImGui::End();
                 return;
             }
+            if (ImGui::BeginMenuBar()) {
+                if (ImGui::BeginMenu("Entity")) {
+                    if(ImGui::MenuItem("New Entity")){
+                        const auto entity = registry.create();
+                        registry.emplace<InspectorIntegration>(entity, "New entity");
+                    }
 
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(5.f, 0)); // Optional: reduce spacing between items
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Components")) {
+                    auto i = 0u;
+                    ([&]() { ImGui::Checkbox(Component::name, &component_filter[i++]); }(), ...);
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenuBar();
+            }
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.f, 0)); // Optional: reduce spacing between items
 
             // Split main window horizontally
-            ImGui::BeginGroup();
-            display_entity_list(
-                    ImVec2(ImGui::GetContentRegionAvail().x * (2.f / 5.f), ImGui::GetContentRegionAvail().y));
-            ImGui::EndGroup();
+
+            ImGui::BeginChild("Entity List", ImVec2{220, 0}, ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
+            display_entity_list();
+            ImGui::EndChild();
 
             ImGui::SameLine();
 
@@ -87,27 +103,13 @@ namespace ge {
         }
 
     private:
-        void display_entity_list(ImVec2 size) {
-            ImGui::BeginChild("Entity list", size, 1);
+        void display_entity_list() {
             auto i = 0u;
-            if (ImGui::BeginPopup("Components")) {
-                ([&]() { ImGui::Checkbox(Component::name, &component_filter[i++]); }(), ...);
-                ImGui::EndPopup();
-            }
-            auto create_new_entity = [&]() {
-                const auto entity = registry.create();
-                registry.emplace<InspectorIntegration>(entity, "New entity");
-            };
-            if (ImGui::Button("Create new entity")) {
-                create_new_entity();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Components")) {
-                ImGui::OpenPopup("Components");
-            }
-            ImGui::SameLine();
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(5.f, 5));
             filter.Draw("Filter", -50);
+            ImGui::PopStyleVar();
             ImGui::SeparatorText("Entity List");
+            ImGui::BeginChild("List", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_None);
             for (auto entity: registry.view<entt::entity>()) {
                 i = 0u;
                 if (!([&]() { return !component_filter[i++] || registry.all_of<Component>(entity); }() && ...)) {
@@ -117,11 +119,11 @@ namespace ge {
             }
             if (ImGui::BeginPopupContextWindow()) {
                 if (ImGui::MenuItem("Create new entity")) {
-                    create_new_entity();
+                    const auto entity = registry.create();
+                    registry.emplace<InspectorIntegration>(entity, "New entity");
                 }
                 ImGui::EndPopup();
             }
-
             ImGui::EndChild();
         }
 
@@ -141,7 +143,7 @@ namespace ge {
             }
 
             if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-                ImGui::SetDragDropPayload(ComponentDragdropTypeName, &generated_component, sizeof(generated_component));
+                ImGui::SetDragDropPayload(ComponentDragdropTypeName, &generated_component, sizeof generated_component);
                 ImGui::Text(chosen_component_name);
                 ImGui::EndDragDropSource();
             }

@@ -243,7 +243,7 @@ namespace ge {
             if (!is_open)return;
             using namespace ImGui;
             //init
-            SetWindowSize(ImVec2(200, 200));
+            ImGui::SetNextWindowSize(ImVec2(500,500),ImGuiCond_FirstUseEver);
             if (!Begin(name, &is_open, ImGuiWindowFlags_None))[[unlikely]] {
                 End();
                 return;

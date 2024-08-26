@@ -1,4 +1,3 @@
-#include "console.hpp"
 #include <raylib.h>
 #include <print>
 #include <rlImGui.h>
@@ -7,9 +6,8 @@
 #include "asset_manager.hpp"
 #include "keyinput.hpp"
 #include "toolbox.hpp"
-#include "inspector.hpp"
+#include "typdefs.hpp"
 
-#include "console_commands.hpp"
 
 static void setup_raylib() {
     const auto display = GetCurrentMonitor();
@@ -21,24 +19,17 @@ static void setup_raylib() {
     InitAudioDevice();
     SetTargetFPS(60);
 }
-
-struct Alive {
-    static constexpr auto name = "Alive";
-
-    static void inspect() { ImGui::Text("Entity Alive :>"); }
-};
-
 auto main() -> int {
     setup_raylib();
     SetExitKey(KEY_DELETE);
     rlImGuiSetup(true);
     auto registry = entt::registry();
     auto toolbox = ge::Toolbox<
-            ge::Console<ge::hi_command, ge::echo_command>,
-            ge::Inspector<Alive>
+            Console_t,
+            Inspector_t
     >(registry);
-    auto &console = std::get<0>(toolbox.windows);
-    auto &inspector = std::get<1>(toolbox.windows);
+    auto &console = std::get<Console_t>(toolbox.windows);
+    auto &inspector = std::get<Inspector_t>(toolbox.windows);
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
     auto entity = registry.create();
     registry.emplace<Alive>(entity);

@@ -1,11 +1,10 @@
 #pragma once
-
 #include <imgui.h>
 #include <entt.hpp>
 #include <imgui_internal.h>
 #include <optional>
 #include <variant>
-
+#include "logs.hpp"
 namespace ge {
     struct InspectorIntegration {
         std::string debug_name;
@@ -57,6 +56,7 @@ namespace ge {
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu("Entity")) {
                     if(ImGui::MenuItem("New Entity")){
+                        ge::logger.add_log(ge::LogLevel::INFO,"New Entity Created");
                         const auto entity = registry.create();
                         registry.emplace<InspectorIntegration>(entity, "New entity");
                     }
@@ -106,7 +106,7 @@ namespace ge {
         void display_entity_list() {
             auto i = 0u;
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(5.f, 5));
-            filter.Draw("Filter", -50);
+            filter.Draw("Search", -50);
             ImGui::PopStyleVar();
             ImGui::SeparatorText("Entity List");
             ImGui::BeginChild("List", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_None);
@@ -119,6 +119,7 @@ namespace ge {
             }
             if (ImGui::BeginPopupContextWindow()) {
                 if (ImGui::MenuItem("Create new entity")) {
+                    ge::logger.add_log(ge::LogLevel::INFO,"New Entity Created");
                     const auto entity = registry.create();
                     registry.emplace<InspectorIntegration>(entity, "New entity");
                 }

@@ -51,7 +51,7 @@ auto main() -> int {
 
 
     while (!WindowShouldClose()) {
-
+        console.empty_logger();
         BeginDrawing();
         ClearBackground(RAYWHITE);
         DrawFPS(15, 15);

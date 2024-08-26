@@ -1,17 +1,11 @@
 #pragma once
-
+#include "logs.hpp"
 #include <functional>
 #include <vector>
 #include <entt.hpp>
 #include <imgui.h>
 
 namespace ge {
-    enum class LogLevel {
-        ERR,
-        INFO,
-        DEBUG,
-        NONE
-    };
     typedef const std::function<void(LogLevel ll, const char *message)> &LogCallback;
     typedef std::vector<std::string> Params;
     template<typename T>
@@ -24,50 +18,6 @@ namespace ge {
 
     template<ConsoleCommand ...AvailableCommand>
     class Console {
-
-        struct Log {
-            LogLevel ll;
-            char *log;
-            bool command_caused;
-
-            Log() = delete;
-
-            Log(const Log &) = delete;
-
-            Log(Log &&other) noexcept: ll(other.ll), log(other.log), command_caused(other.command_caused) {
-                other.log = nullptr;
-            }
-
-            Log(LogLevel log_level, const char *message, bool command_caused) : ll(log_level),
-                                                                                command_caused(command_caused) {
-
-                size_t message_len = strlen(message);
-                log = new char[9 + message_len];
-                uint8_t offset = 0;
-                switch (ll) {
-                    case LogLevel::ERR:
-                        strcpy(log, "[Error] ");
-                        offset = 8;
-                        break;
-                    case LogLevel::NONE:
-                        break;
-                    case LogLevel::INFO:
-                        strcpy(log, "[Info] ");
-                        offset = 7;
-                        break;
-                    case LogLevel::DEBUG:
-                        strcpy(log, "[Debug] ");
-                        offset = 8;
-                        break;
-                }
-                strcpy(log + offset, message);
-            }
-
-            ~Log() {
-                delete log;
-            }
-        };
-
         entt::registry &registry;
         std::vector<Log> log_history;
         int history_pos = -1;
@@ -239,6 +189,12 @@ namespace ge {
         }
 
     public:
+        void empty_logger(){
+            while (!logger.logs.empty()){
+                log_history.emplace_back(std::move(logger.logs.front()));
+                logger.logs.pop();
+            }
+        }
         void draw_gui() {
             if (!is_open)return;
             using namespace ImGui;

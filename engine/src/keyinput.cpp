@@ -47,10 +47,10 @@ void ge::KeyManager::assign_key(KeyboardKey key, const char *id) {
             if (subscribers[old_key][i].id == sub) {
                 auto callback = std::move(subscribers[old_key][i].callback);
                 auto event = subscribers[old_key][i].type;
-                subscribers[old_key].erase(subscribers[old_key].begin() + i);
+                subscribers[old_key].erase(subscribers[old_key].begin() + static_cast<long>(i));
                 auto subscriber = make_subscriber(std::move(callback), event);
-                subscribers[key].push_back(std::move(subscriber));
                 sub = subscriber.id;
+                subscribers[key].push_back(std::move(subscriber));
                 break;
             }
         }

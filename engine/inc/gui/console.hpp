@@ -141,10 +141,10 @@ namespace ge {
                 strcpy(command.get(), command_w_params);
                 return true;
             }
-            size_t len = static_cast<size_t>(first_space - command_w_params);
+            auto len = static_cast<size_t>(first_space - command_w_params);
             command = std::make_unique<char[]>(len + 1);
             memcpy(command.get(), command_w_params, len);
-            command.get()[len] = '\0';
+            command[len] = '\0';
             command_w_params += len + 1;
             std::string param;
             bool in_quotes = false;

@@ -1,9 +1,13 @@
 #pragma once
 
 #include <entt.hpp>
+#include "relations.hpp"
 namespace ge{
-    template<typename T>
-    void kill(entt::registry &registry, entt::entity entity){
+    inline void kill(entt::registry &registry, entt::entity entity){
+        if(!registry.valid(entity)){
+            return;
+        }
+        comp::relations_call_on_delete_entity(registry,entity);
         registry.destroy(entity);
     }
     namespace comp {

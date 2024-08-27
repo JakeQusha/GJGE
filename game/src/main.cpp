@@ -33,13 +33,21 @@ auto main() -> int {
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
     auto entity = registry.create();
     registry.emplace<Alive>(entity);
+    registry.get<Alive>(entity);
     key_manager.assign_key(KEY_D, "essing");
     key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() {
         console.add_log(ge::LogLevel::INFO, "TEST");
     });
     key_manager.assign_key(KEY_Q, "essing");
     //auto &asset_manager = registry.ctx().emplace<ge::AssetManager<Texture,Sound>>();
-
+    auto stary = registry.create();
+    auto mlody = registry.create();
+    auto mlody2 = registry.create();
+    ge::comp::add_relation(registry,stary,mlody);
+    ge::comp::add_relation(registry,stary,mlody2);
+    registry.emplace<ge::InspectorIntegration>(stary,"stary");
+    registry.emplace<ge::InspectorIntegration>(mlody2,"mlody2");
+    registry.emplace<ge::InspectorIntegration>(mlody,"mlody");
 
     while (!WindowShouldClose()) {
         console.empty_logger();

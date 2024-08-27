@@ -1,8 +1,9 @@
 #pragma once
-#include <imgui.h>
-#include <entt.hpp>
 #include <imgui_internal.h>
+#include <entt.hpp>
+#include <imgui.h>
 #include <optional>
+#include "entity_managment.hpp"
 #include <variant>
 #include "logs.hpp"
 namespace ge {
@@ -229,7 +230,7 @@ namespace ge {
 //                ImGui::EndDragDropTarget();
 //            }
             if (ImGui::Button("Delete")) {
-                registry.destroy(entity);
+                ge::kill(registry,entity);
                 current_entity = std::nullopt;
                 return;
             }

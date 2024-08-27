@@ -31,7 +31,8 @@ bool ge::comp::remove_relation(entt::registry &registry, entt::entity parent, en
     for (auto [i, x]: std::views::enumerate(parent_comp.children)) {
         if (x != child) continue;
         registry.remove<Child>(child);
-        parent_comp.children.erase(parent_comp.children.begin() + i);
+        std::swap(parent_comp.children.back(),parent_comp.children.at(i));
+        parent_comp.children.pop_back();
         if(parent_comp.children.empty()){
             registry.erase<Parent>(parent);
         }

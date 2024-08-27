@@ -43,12 +43,14 @@ auto main() -> int {
     auto stary = registry.create();
     auto mlody = registry.create();
     auto mlody2 = registry.create();
-    ge::comp::add_relation(registry,stary,mlody);
+    auto niemowle = registry.create();
     ge::comp::add_relation(registry,stary,mlody2);
+    ge::comp::add_relation(registry,mlody,niemowle);
+    ge::comp::add_relation(registry,stary,mlody);
     registry.emplace<ge::InspectorIntegration>(stary,"stary");
     registry.emplace<ge::InspectorIntegration>(mlody2,"mlody2");
     registry.emplace<ge::InspectorIntegration>(mlody,"mlody");
-
+    registry.emplace<ge::InspectorIntegration>(niemowle,"niemowle");
     while (!WindowShouldClose()) {
         console.empty_logger();
         BeginDrawing();

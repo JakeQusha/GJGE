@@ -32,6 +32,9 @@ bool ge::comp::remove_relation(entt::registry &registry, entt::entity parent, en
         if (x != child) continue;
         registry.remove<Child>(child);
         parent_comp.children.erase(parent_comp.children.begin() + i);
+        if(parent_comp.children.empty()){
+            registry.erase<Parent>(parent);
+        }
         return true;
     }
     return false;

@@ -1,4 +1,5 @@
 #pragma once
+
 #include <imgui_internal.h>
 #include <entt.hpp>
 #include <imgui.h>
@@ -6,6 +7,7 @@
 #include "entity_managment.hpp"
 #include <variant>
 #include "logs.hpp"
+
 namespace ge {
     struct InspectorIntegration {
         std::string debug_name;
@@ -56,8 +58,8 @@ namespace ge {
             }
             if (ImGui::BeginMenuBar()) {
                 if (ImGui::BeginMenu("Entity")) {
-                    if(ImGui::MenuItem("New Entity")){
-                        ge::logger.add_log(ge::LogLevel::INFO,"New Entity Created");
+                    if (ImGui::MenuItem("New Entity")) {
+                        ge::logger.add_log(ge::LogLevel::INFO, "New Entity Created");
                         const auto entity = registry.create();
                         registry.emplace<InspectorIntegration>(entity, "New entity");
                     }
@@ -75,7 +77,8 @@ namespace ge {
 
             // Split main window horizontally
 
-            ImGui::BeginChild("Entity List", ImVec2{220, 0}, ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX);
+            ImGui::BeginChild("Entity List", ImVec2{220, 0},
+                              ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX | ImGuiChildFlags_NavFlattened);
             display_entity_list();
             ImGui::EndChild();
 
@@ -106,27 +109,32 @@ namespace ge {
     private:
         void display_entity_list() {
             auto i = 0u;
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(5.f, 5));
-            filter.Draw("Search", -50);
-            ImGui::PopStyleVar();
+            ImGui::SetNextItemWidth(-FLT_MIN);
+            ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F, ImGuiInputFlags_Tooltip);
+            if (ImGui::InputTextWithHint("##", "Search", filter.InputBuf, sizeof filter.InputBuf,
+                                         ImGuiInputTextFlags_EscapeClearsAll)) {
+                filter.Build();
+            }
             ImGui::SeparatorText("Entity List");
-            ImGui::BeginChild("List", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_None);
-            for (auto entity: registry.view<entt::entity>()) {
-                i = 0u;
-                if (!([&]() { return !component_filter[i++] || registry.all_of<Component>(entity); }() && ...)) {
-                    continue;
+            //ImGui::BeginChild("List", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_None);
+            if (ImGui::BeginTable("##List", 1, ImGuiTableFlags_RowBg)) {
+                for (auto entity: registry.view<entt::entity>()) {
+                    if (registry.all_of<ge::comp::Child>(entity)) {
+                        continue;
+                    }
+                    display_entity_list_entry(entity);
                 }
-                display_entity_list_entry(entity);
-            }
-            if (ImGui::BeginPopupContextWindow()) {
-                if (ImGui::MenuItem("Create new entity")) {
-                    ge::logger.add_log(ge::LogLevel::INFO,"New Entity Created");
-                    const auto entity = registry.create();
-                    registry.emplace<InspectorIntegration>(entity, "New entity");
+
+                if (ImGui::BeginPopupContextWindow()) {
+                    if (ImGui::MenuItem("Create new entity")) {
+                        ge::logger.add_log(ge::LogLevel::INFO, "New Entity Created");
+                        const auto entity = registry.create();
+                        registry.emplace<InspectorIntegration>(entity, "New entity");
+                    }
+                    ImGui::EndPopup();
                 }
-                ImGui::EndPopup();
+                ImGui::EndTable();
             }
-            ImGui::EndChild();
         }
 
         void display_component_creator() {
@@ -181,19 +189,32 @@ namespace ge {
         }
 
         void display_entity_list_entry(entt::entity entity) {
-            auto *const ii = registry.try_get<InspectorIntegration>(entity);
-
-            const auto entity_name = std::format("{} ({})", (uint32_t) entity,
-                                                 ii != nullptr ? ii->debug_name : "unknown");
+            if (!registry.all_of<InspectorIntegration>(entity)) {
+                registry.emplace<InspectorIntegration>(entity, "Unknown");
+            }
+            auto &ii = registry.get<InspectorIntegration>(entity);
+            const auto entity_name = std::format("{} ({})", ii.debug_name, static_cast<uint32_t>(entity));
             if (!filter.PassFilter(entity_name.c_str())) {
                 return;
             }
-            if (ImGui::Selectable(entity_name.c_str(), current_entity == entity, ImGuiSelectableFlags_SelectOnClick)) {
-                if (ImGui::IsMouseClicked(0)) {
-                    current_entity = entity;
-                }
+            auto i = 0u;
+            if (!([&]() { return !component_filter[i++] || registry.all_of<Component>(entity); }() && ...)) {
+                return;
             }
-
+            auto *const parent_comp = registry.try_get<ge::comp::Parent>(entity);
+            ImGui::PushID(static_cast<int>(entity));
+            ImGui::TableNextRow();
+            ImGui::TableNextColumn();
+            ImGuiTreeNodeFlags tree_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
+                                            ImGuiTreeNodeFlags_NavLeftJumpsBackHere;
+            if (entity == current_entity) {
+                tree_flags |= ImGuiTreeNodeFlags_Selected;
+            }
+            tree_flags |= parent_comp ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
+            bool open = ImGui::TreeNodeEx("##", tree_flags, "%s", entity_name.c_str());
+            if (ImGui::IsItemFocused()) {
+                current_entity = entity;
+            }
             if (ImGui::IsItemHovered()) {
                 ImGui::BeginTooltip();
                 ImGui::SeparatorText(entity_name.c_str());
@@ -205,6 +226,15 @@ namespace ge {
                 });
                 ImGui::EndTooltip();
             }
+            if (open) {
+                if(parent_comp){
+                    for (auto child: parent_comp->children) {
+                        display_entity_list_entry(child);
+                    }
+                }
+                ImGui::TreePop();
+            }
+            ImGui::PopID();
         }
 
         void iterate_components(auto &&f) { (f.template operator()<Component>(), ...); }
@@ -230,7 +260,7 @@ namespace ge {
 //                ImGui::EndDragDropTarget();
 //            }
             if (ImGui::Button("Delete")) {
-                ge::kill(registry,entity);
+                ge::kill(registry, entity);
                 current_entity = std::nullopt;
                 return;
             }

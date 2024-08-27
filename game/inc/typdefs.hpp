@@ -6,4 +6,4 @@
 #include "components/relations.hpp"
 
 typedef ge::Console<ge::hi_command, ge::echo_command> Console_t;
-typedef ge::Inspector<Alive> Inspector_t;
+typedef ge::Inspector<Alive,Dead> Inspector_t;

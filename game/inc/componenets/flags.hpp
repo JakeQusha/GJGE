@@ -6,3 +6,8 @@ struct Alive {
 
     static void inspect() { ImGui::Text("Entity Alive :>"); }
 };
+struct Dead {
+    static constexpr auto name = "ded";
+
+    static void inspect() { ImGui::Text("Entity ded :>"); }
+};

@@ -1,7 +1,5 @@
-#pragma once
-
 #include "relations.hpp"
-#include "entity_managment.hpp"
+#include "entity_management.hpp"
 #include <ranges>
 
 bool ge::comp::add_relation(entt::registry &registry, entt::entity parent, entt::entity child) {

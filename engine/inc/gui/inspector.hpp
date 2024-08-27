@@ -4,7 +4,7 @@
 #include <entt.hpp>
 #include <imgui.h>
 #include <optional>
-#include "entity_managment.hpp"
+#include "entity_management.hpp"
 #include <variant>
 #include "logs.hpp"
 
@@ -73,7 +73,7 @@ namespace ge {
                 }
                 ImGui::EndMenuBar();
             }
-            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.f, 0)); // Optional: reduce spacing between items
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4.f, 0.)); // Optional: reduce spacing between items
 
             // Split main window horizontally
 
@@ -108,7 +108,6 @@ namespace ge {
 
     private:
         void display_entity_list() {
-            auto i = 0u;
             ImGui::SetNextItemWidth(-FLT_MIN);
             ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F, ImGuiInputFlags_Tooltip);
             if (ImGui::InputTextWithHint("##", "Search", filter.InputBuf, sizeof filter.InputBuf,
@@ -116,7 +115,6 @@ namespace ge {
                 filter.Build();
             }
             ImGui::SeparatorText("Entity List");
-            //ImGui::BeginChild("List", ImVec2(0, 0), ImGuiChildFlags_None, ImGuiWindowFlags_None);
             if (ImGui::BeginTable("##List", 1, ImGuiTableFlags_RowBg)) {
                 for (auto entity: registry.view<entt::entity>()) {
                     if (registry.all_of<ge::comp::Child>(entity)) {
@@ -242,47 +240,21 @@ namespace ge {
         void display_entity_info(ImVec2 size) {
             entt::entity entity = *current_entity;
 
-//            ImGui::BeginChild("Entity Inspector", size, 1);if (ImGui::BeginDragDropTarget()) {
-//                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload(ComponentDragdropTypeName)) {
-//                    uint32_t i = 0u;
-//                    (
-//                            [&]() {
-//                                fmt::println("name: {}", Component::name);
-//                                if (i++ != generated_component.index() ||
-//                                    std::holds_alternative<std::monostate>(generated_component)) {
-//                                    return;
-//                                }
-//
-//                                an::emplace<Component>(*registry, entity, std::get<Component>(generated_component));
-//                            }(),
-//                            ...);
-//                }
-//                ImGui::EndDragDropTarget();
-//            }
+            ImGui::BeginChild("Entity Inspector", size, ImGuiChildFlags_Border | ImGuiChildFlags_ResizeY,ImGuiWindowFlags_None);
             if (ImGui::Button("Delete")) {
                 ge::kill(registry, entity);
                 current_entity = std::nullopt;
+                ImGui::EndChild();
                 return;
             }
-
             ImGui::SeparatorText("Entity data");
 
             ImGui::BeginGroup();
-            ImGui::Text("Entity: %d", (int) entity);
-            if (auto *ii = registry.try_get<InspectorIntegration>(entity)) {
-                ImGui::Text("Name: %s", ii->debug_name.c_str());
-            }
+            ImGui::Text("Entity: %d", static_cast<uint32_t>(entity));
+            auto ii = registry.get<InspectorIntegration>(entity);
+            ImGui::Text("Name: %s", ii.debug_name.c_str());
             ImGui::EndGroup();
 
-            display_components(entity);
-
-            //ImGui::EndChild();
-
-//
-
-        }
-
-        void display_components(entt::entity entity) {
             ImGui::SeparatorText("Components");
 
             iterate_components([&]<InspectableComponent Comp>() {
@@ -314,6 +286,9 @@ namespace ge {
 
                 ImGui::PopID();
             });
+
+            ImGui::EndChild();
+
         }
     };
 

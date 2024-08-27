@@ -17,7 +17,7 @@ static void setup_raylib() {
     std::println("Resolution is: {}x{}", screen_width, screen_height);
     InitWindow(screen_width, screen_height, "Hello World");
     InitAudioDevice();
-    SetTargetFPS(60);
+    SetTargetFPS(240);
 }
 auto main() -> int {
     setup_raylib();
@@ -32,6 +32,7 @@ auto main() -> int {
     auto &inspector = std::get<Inspector_t>(toolbox.windows);
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
     auto entity = registry.create();
+    registry.emplace<Dead>(entity);
     registry.emplace<Alive>(entity);
     registry.get<Alive>(entity);
     key_manager.assign_key(KEY_D, "essing");
@@ -54,7 +55,7 @@ auto main() -> int {
     while (!WindowShouldClose()) {
         console.empty_logger();
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(GREEN);
         DrawFPS(15, 15);
 //        DrawText(std::format("{}",huj).c_str(),100,100,20,RED);
         rlImGuiBegin();

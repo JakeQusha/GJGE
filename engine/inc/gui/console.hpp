@@ -61,7 +61,6 @@ namespace ge {
                     break;
                 case ImGuiInputTextFlags_CallbackHistory:
                     if (data->EventKey == ImGuiKey_UpArrow && history_pos < (long) commands_history.size() - 1) {
-                        //add_log(LogLevel::DEBUG,std::format("History pos: {}",history_pos).c_str());
                         history_pos++;
                         data->DeleteChars(0, data->BufTextLen);
                         data->InsertChars(0, commands_history.at(commands_history.size() - history_pos - 1).c_str());

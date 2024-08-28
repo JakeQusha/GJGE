@@ -41,8 +41,9 @@ namespace ge {
         entt::registry &registry;
         std::array<bool, sizeof...(Component)> component_filter{};
         ImGuiTextFilter filter;
+        ImGuiTextFilter finter_comp;
         bool is_open = false;
-
+        char temp_name[32];
         explicit Inspector(entt::registry &registry) : registry(registry) {}
 
         std::optional<entt::entity> current_entity;
@@ -241,22 +242,54 @@ namespace ge {
             entt::entity entity = *current_entity;
 
             ImGui::BeginChild("Entity Inspector", size, ImGuiChildFlags_Border | ImGuiChildFlags_ResizeY,ImGuiWindowFlags_None);
+            ImGui::BeginGroup();
+
+            ImGui::BeginChild("data",ImVec2(-70,75),ImGuiChildFlags_None,ImGuiWindowFlags_None);
+            ImGui::SeparatorText("Entity data");
+            ImGui::Text("Entity: %d", static_cast<uint32_t>(entity));
+            auto &ii = registry.get<InspectorIntegration>(entity);
+            ImGui::Text("Name: %s", ii.debug_name.c_str());
+            ImGui::Text("Prefab: None");
+            ImGui::EndChild();
+
+            ImGui::SameLine();
+
+            ImGui::BeginChild("Buttons",ImVec2(70,75),ImGuiChildFlags_None,ImGuiWindowFlags_None);
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.f, 5.));
+            ImGui::SetCursorPosX(-10);
+            ImGui::SeparatorText("Options");
+            ImGui::SetCursorPosX(10);
+            if(ImGui::BeginPopup("Rename")){
+                if(ImGui::InputText("##",temp_name,sizeof temp_name,ImGuiInputTextFlags_EnterReturnsTrue)){
+                    logger.add_log(LogLevel::DEBUG,std::format(R"(Renamed "{}" to "{}")",ii.debug_name,temp_name).c_str());
+                    ii.debug_name.assign(temp_name);
+                    ImGui::CloseCurrentPopup();
+                }
+                ImGui::EndPopup();
+            }
+            if (ImGui::Button("Rename")) {
+                memcpy(temp_name,ii.debug_name.c_str(),std::min(ii.debug_name.size()+1,sizeof temp_name));
+                ImGui::OpenPopup("Rename",ImGuiPopupFlags_None);
+            }
+            ImGui::SetCursorPosX(10);
             if (ImGui::Button("Delete")) {
                 ge::kill(registry, entity);
                 current_entity = std::nullopt;
+                ImGui::PopStyleVar();
+                ImGui::EndChild();
+                ImGui::EndGroup();
                 ImGui::EndChild();
                 return;
             }
-            ImGui::SeparatorText("Entity data");
-
-            ImGui::BeginGroup();
-            ImGui::Text("Entity: %d", static_cast<uint32_t>(entity));
-            auto ii = registry.get<InspectorIntegration>(entity);
-            ImGui::Text("Name: %s", ii.debug_name.c_str());
+            ImGui::PopStyleVar();
+            ImGui::EndChild();
             ImGui::EndGroup();
-
             ImGui::SeparatorText("Components");
-
+            ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F, ImGuiInputFlags_Tooltip);
+            if (ImGui::InputTextWithHint("##", "Search", filter.InputBuf, sizeof finter_comp.InputBuf,
+                                         ImGuiInputTextFlags_EscapeClearsAll)) {
+                finter_comp.Build();
+            }
             iterate_components([&]<InspectableComponent Comp>() {
                 if (!registry.all_of<Comp>(entity)) {
                     return;
@@ -292,4 +325,4 @@ namespace ge {
         }
     };
 
-} // namespace an
+} // namespace ge

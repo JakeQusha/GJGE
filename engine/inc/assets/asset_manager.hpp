@@ -25,6 +25,10 @@ namespace ge {
         }
 
         template<typename T>
+        [[nodiscard]]std::unordered_map<const char *,T>& get_map(){
+            return std::get<std::unordered_map<const char *, T>>(assets);
+        }
+        template<typename T>
         void add(const char *id, T &&asset) {
             std::get<std::unordered_map<const char *, T>>(assets)[id] = std::forward<T>(asset);
         }

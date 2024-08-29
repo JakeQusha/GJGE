@@ -44,7 +44,7 @@ namespace ge {
         bool is_creator_open = false;
         bool is_open = false;
         char temp_name[32];
-
+        bool wait = false;
         explicit Inspector(entt::registry &registry) : registry(registry) {}
 
         std::optional<entt::entity> current_entity;
@@ -138,6 +138,10 @@ namespace ge {
 
         void display_component_creator() {
             if (!is_creator_open) return;
+            if (wait) {
+                wait = false;
+                return;
+            }
             ImGui::BeginChild("Component creator", ImVec2(0, 0), ImGuiChildFlags_Border);
             ImGui::SeparatorText("Component creator");
 
@@ -334,6 +338,7 @@ namespace ge {
             ImGui::SameLine();
             if (ImGui::Button(is_creator_open ? "Hide Creator" : "Open Creator",ImVec2(0,0))) {
                 is_creator_open = !is_creator_open;
+                wait = true;
             }
             ImGui::PopStyleVar();
             ImGui::EndChild();

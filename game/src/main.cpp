@@ -7,6 +7,7 @@
 #include "keyinput.hpp"
 #include "toolbox.hpp"
 #include "typdefs.hpp"
+#include "sprite.hpp"
 
 
 static void setup_raylib() {
@@ -23,6 +24,9 @@ auto main() -> int {
     setup_raylib();
     SetExitKey(KEY_DELETE);
     rlImGuiSetup(true);
+
+    auto img = LoadImage("/home/jacek/Desktop/mikolaj1.png");
+    auto txt = LoadTextureFromImage(img);
     auto registry = entt::registry();
     auto toolbox = ge::Toolbox<
             Console_t,
@@ -31,10 +35,14 @@ auto main() -> int {
     auto &console = std::get<Console_t>(toolbox.windows);
     auto &inspector = std::get<Inspector_t>(toolbox.windows);
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
+
     auto entity = registry.create();
     registry.emplace<Dead>(entity);
     registry.emplace<Alive>(entity);
-    registry.get<Alive>(entity);
+    registry.emplace<ge::comp::Transform2D>(entity);
+    registry.emplace<ge::comp::Sprite>(entity);
+    auto &sprite = registry.get<ge::comp::Sprite>(entity);
+    sprite.texture.emplace(txt);
     key_manager.assign_key(KEY_D, "essing");
     key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() {
         console.add_log(ge::LogLevel::INFO, "TEST");
@@ -64,6 +72,7 @@ auto main() -> int {
         rlImGuiEnd();
         EndDrawing();
         ge::notify_keyboard_press_system(key_manager);
+        ge::comp::draw_sprites(registry);
     }
 
 

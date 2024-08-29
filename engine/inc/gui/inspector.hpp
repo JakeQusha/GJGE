@@ -43,7 +43,7 @@ namespace ge {
         ImGuiTextFilter filter_comp;
         bool is_creator_open = false;
         bool is_open = false;
-        char temp_name[32];
+        char temp_name[32]{};
         bool wait = false;
         explicit Inspector(entt::registry &registry) : registry(registry) {}
 
@@ -147,26 +147,12 @@ namespace ge {
 
             static const char *chosen_component_name = "None";
             ImVec2 text_size = ImGui::CalcTextSize(chosen_component_name);
-
+            ImGui::BeginChild("type", ImVec2(-120, 20), ImGuiWindowFlags_None);
             ImGui::Text("Chosen type: ");
             ImGui::SameLine();
             if (ImGui::Button(chosen_component_name, ImVec2(text_size.x + 10, 0))) {
                 ImGui::OpenPopup(chosen_component_name);
             }
-            ImGui::SameLine();
-
-            if(ImGui::Button("Add Component")){
-                entt::entity entity = *current_entity;
-                std::visit([&](auto && arg){
-                    using T =std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, std::monostate>) {
-                        logger.add_log(LogLevel::ERR, "No component selected");
-                        return;
-                    }
-                    registry.emplace_or_replace<T>(entity,std::forward<decltype(arg)>(arg));
-                },generated_component);
-            }
-
             if (ImGui::BeginPopup(chosen_component_name)) {
                 auto i = 0u;
                 iterate_components([&]<InspectableComponent Comp>() {
@@ -179,6 +165,19 @@ namespace ge {
                     i++;
                 });
                 ImGui::EndPopup();
+            }
+            ImGui::EndChild();
+            ImGui::SameLine();
+            if(ImGui::Button("Add Component",ImVec2(100,20))){
+                entt::entity entity = *current_entity;
+                std::visit([&](auto && arg){
+                    using T =std::decay_t<decltype(arg)>;
+                    if constexpr (std::is_same_v<T, std::monostate>) {
+                        logger.add_log(LogLevel::ERR, "No component selected");
+                        return;
+                    }
+                    registry.emplace_or_replace<T>(entity,std::forward<decltype(arg)>(arg));
+                },generated_component);
             }
 
             ImGui::SeparatorText("Component data");
@@ -254,7 +253,7 @@ namespace ge {
             ImGui::Text("Entity: %d", static_cast<uint32_t>(entity));
             auto &ii = registry.get<InspectorIntegration>(entity);
             ImGui::Text("Name: %s", ii.debug_name.c_str());
-            ImGui::Text("Prefab: None");
+            ImGui::Text("Template: None");
             ImGui::EndChild();
 
             ImGui::SameLine();
@@ -330,13 +329,15 @@ namespace ge {
                 ImGui::EndChild();
             }
             ImGui::Separator();
+            ImGui::BeginChild("Component data", ImVec2(-120, 0), ImGuiWindowFlags_None);
             ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F, ImGuiInputFlags_Tooltip);
             if (ImGui::InputTextWithHint("##", "Search", filter_comp.InputBuf, sizeof filter_comp.InputBuf,
                                          ImGuiInputTextFlags_EscapeClearsAll)) {
                 filter_comp.Build();
             }
+            ImGui::EndChild();
             ImGui::SameLine();
-            if (ImGui::Button(is_creator_open ? "Hide Creator" : "Open Creator",ImVec2(0,0))) {
+            if (ImGui::Button(is_creator_open ? "Hide Creator" : "Open Creator",ImVec2(100,0))) {
                 is_creator_open = !is_creator_open;
                 wait = true;
             }

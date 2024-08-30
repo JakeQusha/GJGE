@@ -1,7 +1,7 @@
 #pragma once
 
 #include <entt.hpp>
-#include "relations.hpp"
+#include "components/relations.hpp"
 namespace ge{
     void kill(entt::registry &registry, entt::entity entity);
     namespace comp {

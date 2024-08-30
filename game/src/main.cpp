@@ -3,11 +3,11 @@
 #include <rlImGui.h>
 #include <imgui.h>
 #include <entt.hpp>
-#include "asset_manager.hpp"
+#include "assets/asset_manager.hpp"
 #include "keyinput.hpp"
-#include "toolbox.hpp"
-#include "typdefs.hpp"
-#include "sprite.hpp"
+#include "gui/toolbox.hpp"
+#include "global_defines.hpp"
+#include "components/sprite.hpp"
 
 
 static void setup_raylib() {
@@ -18,31 +18,37 @@ static void setup_raylib() {
     std::println("Resolution is: {}x{}", screen_width, screen_height);
     InitWindow(screen_width, screen_height, "Hello World");
     InitAudioDevice();
-    SetTargetFPS(240);
+    SetTargetFPS(60);
 }
 auto main() -> int {
     setup_raylib();
     SetExitKey(KEY_DELETE);
     rlImGuiSetup(true);
 
-    auto img = LoadImage("/home/jacek/Desktop/mikolaj1.png");
+    auto img = LoadImage("./resources/bill.png");
+    auto img2 = LoadImage("./resources/job.png");
     auto txt = LoadTextureFromImage(img);
+    auto txt2 = LoadTextureFromImage(img2);
     auto registry = entt::registry();
     auto toolbox = ge::Toolbox<
-            Console_t,
-            Inspector_t
+            conf::Console_t,
+            conf::Inspector_t
     >(registry);
-    auto &console = std::get<Console_t>(toolbox.windows);
-    auto &inspector = std::get<Inspector_t>(toolbox.windows);
+    auto &console = std::get<conf::Console_t>(toolbox.windows);
+    auto &inspector = std::get<conf::Inspector_t>(toolbox.windows);
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
-
+    auto &asset_manager = registry.ctx().emplace<conf::AssetManager_t>();
+    auto mt = ge::MultiTexture(txt);
+    auto mt2 = ge::MultiTexture(txt2);
+    asset_manager.add<ge::MultiTexture>("bill",std::move(mt));
+    asset_manager.add<ge::MultiTexture>("job",std::move(mt2));
     auto entity = registry.create();
     registry.emplace<Dead>(entity);
     registry.emplace<Alive>(entity);
     registry.emplace<ge::comp::Transform2D>(entity);
     registry.emplace<ge::comp::Sprite>(entity);
     auto &sprite = registry.get<ge::comp::Sprite>(entity);
-    sprite.texture.emplace(txt);
+    sprite.texture = asset_manager.get<ge::MultiTexture>("bill");
     key_manager.assign_key(KEY_D, "essing");
     key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() {
         console.add_log(ge::LogLevel::INFO, "TEST");

@@ -42,6 +42,7 @@ if(ENABLE_SANITIZER)
 endif()
 
 add_subdirectory(external)
+add_subdirectory(definitions)
 add_subdirectory(engine)
 add_subdirectory(game)
 

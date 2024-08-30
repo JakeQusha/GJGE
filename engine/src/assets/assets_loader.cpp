@@ -1,8 +1,9 @@
 #include "error.hpp"
-#include "assets_loader.hpp"
+#include "assets/assets_loader.hpp"
 #include <expected>
 #include <filesystem>
 
+//#include "global_defines.hpp"
 namespace ge {
 
 [[nodiscard]] auto get_asset_path(const std::filesystem::path &resource_path) -> Expected<std::filesystem::path> {

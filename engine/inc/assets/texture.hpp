@@ -6,7 +6,7 @@
 
 namespace ge {
     struct MultiTexture {
-        Texture2D &texture;
+        Texture2D texture;
         int32_t cell_size_x;
         int32_t cell_size_y;
 
@@ -26,15 +26,12 @@ namespace ge {
                     .width = static_cast<float>(cell_size_x),
                     .height = static_cast<float>(cell_size_y)};
         }
-
-        MultiTexture() = delete;
-        MultiTexture(const MultiTexture & other) noexcept : texture(other.texture), cell_size_x(other.cell_size_x), cell_size_y(other.cell_size_y) {}
-        MultiTexture(MultiTexture && other) noexcept : texture(other.texture), cell_size_x(other.cell_size_x), cell_size_y(other.cell_size_y) {}
-        explicit MultiTexture(Texture2D &texture2D) : texture(texture2D), cell_size_x(
+        MultiTexture() = default;
+        explicit MultiTexture(Texture2D texture2D) : texture(texture2D), cell_size_x(
                 std::abs(texture.width)), cell_size_y(
                 std::abs(texture.height)) {}
 
-        MultiTexture(Texture2D &texture2D, uint16_t cell_size_x, uint16_t cell_size_y) : texture(texture2D),
+        MultiTexture(Texture2D texture2D, uint16_t cell_size_x, uint16_t cell_size_y) : texture(texture2D),
                                                                                          cell_size_x(cell_size_x),
                                                                                          cell_size_y(cell_size_y) {}
 

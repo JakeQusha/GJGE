@@ -3,6 +3,7 @@
 #include <tuple>
 #include <unordered_map>
 #include <type_traits>
+#include <imgui.h>
 
 namespace ge {
     template<typename... Types>
@@ -25,13 +26,29 @@ namespace ge {
         }
 
         template<typename T>
-        [[nodiscard]]std::unordered_map<const char *,T>& get_map(){
+        [[nodiscard]]std::unordered_map<const char *, T> &get_map() {
             return std::get<std::unordered_map<const char *, T>>(assets);
         }
+
         template<typename T>
         void add(const char *id, T &&asset) {
             std::get<std::unordered_map<const char *, T>>(assets)[id] = std::forward<T>(asset);
         }
 
+        template<typename T>
+        void display_asset_picker(T* &result, const char *name) {
+            if (ImGui::Button(name)) {
+                ImGui::OpenPopup(name);
+            }
+            if (ImGui::BeginPopup(name)) {
+                for(auto &[asset_name, asset] : std::get<std::unordered_map<const char *, T>>(assets)){
+                    if (ImGui::MenuItem(asset_name, nullptr)) {
+                        result = &asset;
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+                ImGui::EndPopup();
+            }
+        }
     };
 }

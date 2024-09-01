@@ -7,7 +7,6 @@
 #include <entt.hpp>
 #include "assets/texture.hpp"
 #include "transform2D.hpp"
-#include "global_defines.hpp"
 
 namespace ge::comp {
     struct Sprite {
@@ -18,12 +17,12 @@ namespace ge::comp {
         Color tint = WHITE;
 
         void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
-            auto am = registry.ctx().get<ge::AssetManager<ge::MultiTexture>>();
+            auto am = registry.ctx().get<ge::AssetManager>();
             if (ImGui::BeginPopup("es")) {
-                for(auto &[asset_name, asset] : am.get_map<MultiTexture>()){
+                for(auto &&[asset_name, asset] : am.get_all<MultiTexture>()){
                     if (ImGui::MenuItem(asset_name, nullptr)) {
-                        texture = asset;
-                        //ImGui::CloseCurrentPopup();
+                        texture = std::any_cast<MultiTexture>(asset);
+                        ImGui::CloseCurrentPopup();
                     }
                 }
                 ImGui::EndPopup();
@@ -45,8 +44,8 @@ namespace ge::comp {
             }
             auto &txt = sprite.texture.value();
             auto rect = txt.rect_multi(sprite.id);
-            rect.width *= transform.scale.x <0 ? -1:1;
-            rect.height *= transform.scale.y <0 ? -1:1;
+            rect.width *= transform.scale.x < 0 ? -1 : 1;
+            rect.height *= transform.scale.y < 0 ? -1 : 1;
             auto width = std::abs(rect.width) * std::abs(transform.scale.x);
             auto height = std::abs(rect.height) * std::abs(transform.scale.y);
             DrawTexturePro(txt.texture, rect, Rectangle{transform.position.x, transform.position.y, width, height},

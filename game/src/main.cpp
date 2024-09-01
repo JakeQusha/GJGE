@@ -6,8 +6,8 @@
 #include "assets/asset_manager.hpp"
 #include "keyinput.hpp"
 #include "gui/toolbox.hpp"
-#include "global_defines.hpp"
 #include "components/sprite.hpp"
+#include "typedefs.hpp"
 
 
 static void setup_raylib() {
@@ -31,13 +31,13 @@ auto main() -> int {
     auto txt2 = LoadTextureFromImage(img2);
     auto registry = entt::registry();
     auto toolbox = ge::Toolbox<
-            conf::Console_t,
-            conf::Inspector_t
+            Console_t,
+            Inspector_t
     >(registry);
-    auto &console = std::get<conf::Console_t>(toolbox.windows);
-    auto &inspector = std::get<conf::Inspector_t>(toolbox.windows);
+    auto &console = std::get<Console_t>(toolbox.windows);
+    auto &inspector = std::get<Inspector_t>(toolbox.windows);
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
-    auto &asset_manager = registry.ctx().emplace<conf::AssetManager_t>();
+    auto &asset_manager = registry.ctx().emplace<ge::AssetManager>();
     auto mt = ge::MultiTexture(txt);
     auto mt2 = ge::MultiTexture(txt2);
     asset_manager.add<ge::MultiTexture>("bill",std::move(mt));
@@ -59,9 +59,9 @@ auto main() -> int {
     auto mlody = registry.create();
     auto mlody2 = registry.create();
     auto niemowle = registry.create();
-    ge::comp::add_relation(registry,stary,mlody2);
-    ge::comp::add_relation(registry,mlody,niemowle);
-    ge::comp::add_relation(registry,stary,mlody);
+    ge::add_relation(registry,stary,mlody2);
+    ge::add_relation(registry,mlody,niemowle);
+    ge::add_relation(registry,stary,mlody);
     registry.emplace<ge::InspectorIntegration>(stary,"stary");
     registry.emplace<ge::InspectorIntegration>(mlody2,"mlody2");
     registry.emplace<ge::InspectorIntegration>(mlody,"mlody");

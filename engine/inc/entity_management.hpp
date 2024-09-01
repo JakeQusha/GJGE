@@ -4,6 +4,7 @@
 #include "components/relations.hpp"
 namespace ge{
     void kill(entt::registry &registry, entt::entity entity);
+    entt::entity create(entt::registry &registry, const char *name);
     namespace comp {
 
         template<typename T, typename... Args>

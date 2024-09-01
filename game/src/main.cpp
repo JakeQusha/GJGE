@@ -55,17 +55,13 @@ auto main() -> int {
     });
     key_manager.assign_key(KEY_Q, "essing");
     //auto &asset_manager = registry.ctx().emplace<ge::AssetManager<Texture,Sound>>();
-    auto stary = registry.create();
-    auto mlody = registry.create();
-    auto mlody2 = registry.create();
-    auto niemowle = registry.create();
+    auto stary = ge::create(registry,"stary");
+    auto mlody = ge::create(registry,"mlody");
+    auto mlody2 = ge::create(registry,"mlody2");
+    auto niemowle = ge::create(registry,"mniemowle");
     ge::add_relation(registry,stary,mlody2);
     ge::add_relation(registry,mlody,niemowle);
     ge::add_relation(registry,stary,mlody);
-    registry.emplace<ge::InspectorIntegration>(stary,"stary");
-    registry.emplace<ge::InspectorIntegration>(mlody2,"mlody2");
-    registry.emplace<ge::InspectorIntegration>(mlody,"mlody");
-    registry.emplace<ge::InspectorIntegration>(niemowle,"niemowle");
     while (!WindowShouldClose()) {
         console.empty_logger();
         BeginDrawing();
@@ -78,6 +74,7 @@ auto main() -> int {
         rlImGuiEnd();
         EndDrawing();
         ge::notify_keyboard_press_system(key_manager);
+        ge::calculate_global_transform(registry);
         ge::comp::draw_sprites(registry);
     }
 

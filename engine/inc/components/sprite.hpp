@@ -44,12 +44,12 @@ namespace ge::comp {
             }
             auto &txt = sprite.texture.value();
             auto rect = txt.rect_multi(sprite.id);
-            rect.width *= transform.scale.x < 0 ? -1 : 1;
-            rect.height *= transform.scale.y < 0 ? -1 : 1;
-            auto width = std::abs(rect.width) * std::abs(transform.scale.x);
-            auto height = std::abs(rect.height) * std::abs(transform.scale.y);
-            DrawTexturePro(txt.texture, rect, Rectangle{transform.position.x, transform.position.y, width, height},
-                           Vector2Multiply(sprite.offset, Vector2(width, height)), RAD2DEG * transform.rotation,
+            rect.width *= transform.global_scale.x < 0 ? -1 : 1;
+            rect.height *= transform.global_scale.y < 0 ? -1 : 1;
+            auto width = std::abs(rect.width) * std::abs(transform.global_scale.x);
+            auto height = std::abs(rect.height) * std::abs(transform.global_scale.y);
+            DrawTexturePro(txt.texture, rect, Rectangle{transform.global_position.x, transform.global_position.y, width, height},
+                           Vector2Multiply(sprite.offset, Vector2(width, height)), RAD2DEG * transform.global_rotation,
                            sprite.tint);
         }
     }

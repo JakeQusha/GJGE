@@ -25,8 +25,8 @@ auto main() -> int {
     SetExitKey(KEY_DELETE);
     rlImGuiSetup(true);
 
-    auto img = LoadImage("./resources/bill.png");
-    auto img2 = LoadImage("./resources/job.png");
+    auto img = LoadImage("./resources/blue.png");
+    auto img2 = LoadImage("./resources/orange.png");
     auto txt = LoadTextureFromImage(img);
     auto txt2 = LoadTextureFromImage(img2);
     auto registry = entt::registry();
@@ -38,17 +38,13 @@ auto main() -> int {
     auto &inspector = std::get<Inspector_t>(toolbox.windows);
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
     auto &asset_manager = registry.ctx().emplace<ge::AssetManager>();
-    auto mt = ge::MultiTexture(txt);
-    auto mt2 = ge::MultiTexture(txt2);
-    asset_manager.add<ge::MultiTexture>("bill",std::move(mt));
-    asset_manager.add<ge::MultiTexture>("job",std::move(mt2));
+
+    asset_manager.add<ge::MultiTexture>("blue",ge::MultiTexture(txt));
+    asset_manager.add<ge::MultiTexture>("orange",ge::MultiTexture(txt2));
     auto entity = registry.create();
     registry.emplace<Dead>(entity);
     registry.emplace<Alive>(entity);
     registry.emplace<ge::comp::Transform2D>(entity);
-    registry.emplace<ge::comp::Sprite>(entity);
-    auto &sprite = registry.get<ge::comp::Sprite>(entity);
-    sprite.texture = asset_manager.get<ge::MultiTexture>("bill");
     key_manager.assign_key(KEY_D, "essing");
     key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() {
         console.add_log(ge::LogLevel::INFO, "TEST");
@@ -56,10 +52,12 @@ auto main() -> int {
     key_manager.assign_key(KEY_Q, "essing");
     //auto &asset_manager = registry.ctx().emplace<ge::AssetManager<Texture,Sound>>();
     auto stary = ge::create(registry,"stary");
+    auto & sprite =registry.emplace<ge::comp::Sprite>(stary);
+    sprite.texture = asset_manager.get<ge::MultiTexture>("blue");
     auto mlody = ge::create(registry,"mlody");
-    auto mlody2 = ge::create(registry,"mlody2");
+    auto & sprite1 =registry.emplace<ge::comp::Sprite>(mlody);
+    sprite1.texture = asset_manager.get<ge::MultiTexture>("orange");
     auto niemowle = ge::create(registry,"mniemowle");
-    ge::add_relation(registry,stary,mlody2);
     ge::add_relation(registry,mlody,niemowle);
     ge::add_relation(registry,stary,mlody);
     while (!WindowShouldClose()) {

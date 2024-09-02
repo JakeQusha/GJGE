@@ -10,8 +10,7 @@ bool ge::add_relation(entt::registry &registry, entt::entity parent, entt::entit
     if (!registry.all_of<comp::Parent>(parent)) {
         registry.emplace<comp::Parent>(parent);
     }
-    registry.emplace<comp::Child>(child);
-    auto &child_comp = registry.get<comp::Child>(child);
+    auto &child_comp = registry.emplace<comp::Child>(child);
     auto &parent_comp = registry.get<comp::Parent>(parent);
     child_comp.parent = parent;
     parent_comp.children.push_back(child);

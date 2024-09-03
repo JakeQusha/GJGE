@@ -239,14 +239,32 @@ namespace ge {
                     entt::entity child = *(entt::entity *) payload->Data;
                     auto *child_comp = registry.try_get<comp::Child>(child);
                     if (!child_comp) {
+                        entt::entity test_e = entity;
+                        while (true) {
+                            auto *child_comp = registry.try_get<comp::Child>(test_e);
+                            test_e = child_comp->parent;
+                            if (test_e == child) {
+                                goto DnDEnd;
+                            }
+                        }
                         add_relation(registry, entity, child);
                         goto DnDEnd;
                     }
                     entt::entity parent = child_comp->parent;
-                    remove_relation(registry, parent, child);
                     if (parent != entity) {
+                        entt::entity test_e = entity;
+                        while (true) {
+                            auto *child_comp = registry.try_get<comp::Child>(test_e);
+                            test_e = child_comp->parent;
+                            if (test_e == child) {
+                                goto DnDEnd;
+                            }
+                        }
+                        remove_relation(registry, parent, child);
                         add_relation(registry, entity, child);
+                        goto DnDEnd;
                     }
+                    remove_relation(registry, parent, child);
                 }
                 DnDEnd:
                 ImGui::EndDragDropTarget();

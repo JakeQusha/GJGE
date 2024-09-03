@@ -1,38 +1,38 @@
-#include "relations.hpp"
+#include "components/relations.hpp"
 #include "entity_management.hpp"
 #include <ranges>
+#include "gui/logs.hpp"
 
-bool ge::comp::add_relation(entt::registry &registry, entt::entity parent, entt::entity child) {
-    if (registry.all_of<Child>(child)) {
+bool ge::add_relation(entt::registry &registry, entt::entity parent, entt::entity child) {
+    if (registry.all_of<comp::Child>(child)) {
         return false;
     }
-    if (!registry.all_of<Parent>(parent)) {
-        registry.emplace<Parent>(parent);
+    if (!registry.all_of<comp::Parent>(parent)) {
+        registry.emplace<comp::Parent>(parent);
     }
-    registry.emplace<Child>(child);
-    auto &child_comp = registry.get<Child>(child);
-    auto &parent_comp = registry.get<Parent>(parent);
+    auto &child_comp = registry.emplace<comp::Child>(child);
+    auto &parent_comp = registry.get<comp::Parent>(parent);
     child_comp.parent = parent;
     parent_comp.children.push_back(child);
     return true;
 }
 
-bool ge::comp::remove_relation(entt::registry &registry, entt::entity parent, entt::entity child) {
-    if (!registry.all_of<Parent>(parent) || !registry.all_of<Child>(child)) {
+bool ge::remove_relation(entt::registry &registry, entt::entity parent, entt::entity child) {
+    if (!registry.all_of<comp::Parent>(parent) || !registry.all_of<comp::Child>(child)) {
         return false;
     }
-    auto &child_comp = registry.get<Child>(child);
+    auto &child_comp = registry.get<comp::Child>(child);
     if (child_comp.parent != parent) {
         return false;
     }
-    auto &parent_comp = registry.get<Parent>(parent);
+    auto &parent_comp = registry.get<comp::Parent>(parent);
     for (auto [i, x]: std::views::enumerate(parent_comp.children)) {
         if (x != child) continue;
-        registry.remove<Child>(child);
+        registry.remove<comp::Child>(child);
         std::swap(parent_comp.children.back(),parent_comp.children.at(i));
         parent_comp.children.pop_back();
         if(parent_comp.children.empty()){
-            registry.erase<Parent>(parent);
+            registry.erase<comp::Parent>(parent);
         }
         return true;
     }
@@ -40,19 +40,19 @@ bool ge::comp::remove_relation(entt::registry &registry, entt::entity parent, en
 }
 
 ///is called under the hood by the ge::remove function
-void ge::comp::relations_call_on_delete_entity(entt::registry &registry, entt::entity entity) {
-    if (registry.all_of<Parent>(entity)) {
-        auto &parent = registry.get<Parent>(entity);
+void ge::relations_call_on_delete_entity(entt::registry &registry, entt::entity entity) {
+    if (registry.all_of<comp::Parent>(entity)) {
+        auto &parent = registry.get<comp::Parent>(entity);
         for (auto child: parent.children) {
             if (!registry.valid(child)) {
                 continue;
             }
-            registry.remove<Child>(child);
+            registry.remove<comp::Child>(child);
             kill(registry, child);
         }
     }
-    if (registry.all_of<Child>(entity)) {
-        auto &child = registry.get<Child>(entity);
+    if (registry.all_of<comp::Child>(entity)) {
+        auto &child = registry.get<comp::Child>(entity);
         remove_relation(registry, child.parent, entity);
     }
 }

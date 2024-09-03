@@ -5,9 +5,9 @@
 #include <imgui.h>
 #include <optional>
 #include <entt.hpp>
-#include "texture.hpp"
+#include "assets/texture.hpp"
 #include "transform2D.hpp"
-
+#include "gui/inspector_comp.hpp"
 namespace ge::comp {
     struct Sprite {
         static constexpr auto name = "Sprite";
@@ -16,20 +16,9 @@ namespace ge::comp {
         Vector2 offset{0.5f, 0.5f};
         Color tint = WHITE;
 
-        Sprite() = default;
-
-        Sprite(const Sprite &other) : texture(other.texture), id(other.id), offset(other.offset), tint(other.tint) {}
-
-        Sprite &operator=(const Sprite &other) {
-            if (other.texture) { texture.emplace(*other.texture); } else { texture = std::nullopt;};
-            id = other.id;
-            offset = other.offset;
-            tint = other.tint;
-            return *this;
-        };
-
         void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
-            ImGui::Text("Sprite");
+            auto am = registry.ctx().get<ge::AssetManager>();
+            display_asset_manager_picker<ge::MultiTexture>("Texture",texture,am);
             ImGui::DragFloat2("Offset", &offset.x, 0.01f);
             ImGui::DragScalar("Sprite id", ImGuiDataType_U16, &id, 1.0f);
         }
@@ -43,11 +32,12 @@ namespace ge::comp {
             }
             auto &txt = sprite.texture.value();
             auto rect = txt.rect_multi(sprite.id);
-            auto width = std::abs(rect.width) * transform.scale.x;
-            auto height = std::abs(rect.height) * transform.scale.y;
-            auto size_vec = Vector2{width, height};
-            DrawTexturePro(txt.texture, rect, Rectangle{transform.position.x, transform.position.y, width, height},
-                           Vector2Multiply(sprite.offset, Vector2(width, height)), RAD2DEG * transform.rotation,
+            rect.width *= transform.global_scale.x < 0 ? -1 : 1;
+            rect.height *= transform.global_scale.y < 0 ? -1 : 1;
+            auto width = std::abs(rect.width) * std::abs(transform.global_scale.x);
+            auto height = std::abs(rect.height) * std::abs(transform.global_scale.y);
+            DrawTexturePro(txt.texture, rect, Rectangle{transform.global_position.x, transform.global_position.y, width, height},
+                           Vector2Multiply(sprite.offset, Vector2(width, height)), RAD2DEG * transform.global_rotation,
                            sprite.tint);
         }
     }

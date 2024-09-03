@@ -1,5 +1,5 @@
 #include "error.hpp"
-#include "assets_loader.hpp"
+#include "assets/assets_loader.hpp"
 #include <expected>
 #include <filesystem>
 

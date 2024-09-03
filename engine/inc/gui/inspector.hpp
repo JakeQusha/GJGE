@@ -45,6 +45,7 @@ namespace ge {
         bool is_open = false;
         char temp_name[32]{};
         bool wait = false;
+
         explicit Inspector(entt::registry &registry) : registry(registry) {}
 
         std::optional<entt::entity> current_entity;
@@ -168,16 +169,16 @@ namespace ge {
             }
             ImGui::EndChild();
             ImGui::SameLine();
-            if(ImGui::Button("Add Component",ImVec2(100,20))){
+            if (ImGui::Button("Add Component", ImVec2(100, 20))) {
                 entt::entity entity = *current_entity;
-                std::visit([&](auto && arg){
-                    using T =std::decay_t<decltype(arg)>;
+                std::visit([&](auto &&arg) {
+                    using T = std::decay_t<decltype(arg)>;
                     if constexpr (std::is_same_v<T, std::monostate>) {
                         logger.add_log(LogLevel::ERR, "No component selected");
                         return;
                     }
-                    registry.emplace_or_replace<T>(entity,std::forward<decltype(arg)>(arg));
-                },generated_component);
+                    registry.emplace_or_replace<T>(entity, std::forward<decltype(arg)>(arg));
+                }, generated_component);
             }
 
             ImGui::SeparatorText("Component data");
@@ -227,6 +228,28 @@ namespace ge {
                     ImGui::Text(Comp::name);
                 });
                 ImGui::EndTooltip();
+            }
+            if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)) {
+                ImGui::SetDragDropPayload("child", &entity, sizeof entity);
+                ImGui::Text("%s", entity_name.c_str());
+                ImGui::EndDragDropSource();
+            }
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload *payload = ImGui::AcceptDragDropPayload("child")) {
+                    entt::entity child = *(entt::entity *) payload->Data;
+                    auto *child_comp = registry.try_get<comp::Child>(child);
+                    if (!child_comp) {
+                        add_relation(registry, entity, child);
+                        goto DnDEnd;
+                    }
+                    entt::entity parent = child_comp->parent;
+                    remove_relation(registry, parent, child);
+                    if (parent != entity) {
+                        add_relation(registry, entity, child);
+                    }
+                }
+                DnDEnd:
+                ImGui::EndDragDropTarget();
             }
             if (open) {
                 if (parent_comp) {
@@ -297,7 +320,7 @@ namespace ge {
                                   ImGuiWindowFlags_None)) {
                 ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.f, 0.));
                 iterate_components([&]<InspectableComponent Comp>() {
-                    if (!registry.all_of<Comp>(entity)|| ! filter_comp.PassFilter(Comp::name)) {
+                    if (!registry.all_of<Comp>(entity) || !filter_comp.PassFilter(Comp::name)) {
                         return;
                     }
 
@@ -337,7 +360,7 @@ namespace ge {
             }
             ImGui::EndChild();
             ImGui::SameLine();
-            if (ImGui::Button(is_creator_open ? "Hide Creator" : "Open Creator",ImVec2(100,0))) {
+            if (ImGui::Button(is_creator_open ? "Hide Creator" : "Open Creator", ImVec2(100, 0))) {
                 is_creator_open = !is_creator_open;
                 wait = true;
             }

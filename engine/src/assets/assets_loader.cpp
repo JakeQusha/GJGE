@@ -3,7 +3,6 @@
 #include <expected>
 #include <filesystem>
 
-//#include "global_defines.hpp"
 namespace ge {
 
 [[nodiscard]] auto get_asset_path(const std::filesystem::path &resource_path) -> Expected<std::filesystem::path> {

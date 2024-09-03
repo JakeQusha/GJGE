@@ -7,7 +7,7 @@
 #include <entt.hpp>
 #include "assets/texture.hpp"
 #include "transform2D.hpp"
-
+#include "gui/inspector_comp.hpp"
 namespace ge::comp {
     struct Sprite {
         static constexpr auto name = "Sprite";
@@ -18,19 +18,7 @@ namespace ge::comp {
 
         void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity) {
             auto am = registry.ctx().get<ge::AssetManager>();
-            if (ImGui::BeginPopup("es")) {
-                for(auto &&[asset_name, asset] : am.get_all<MultiTexture>()){
-                    if (ImGui::MenuItem(asset_name, nullptr)) {
-                        texture = std::any_cast<MultiTexture>(asset);
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
-                ImGui::EndPopup();
-            }
-            if (ImGui::Button("Texture")) {
-                ImGui::OpenPopup("es");
-            }
-
+            display_asset_manager_picker<ge::MultiTexture>("Texture",texture,am);
             ImGui::DragFloat2("Offset", &offset.x, 0.01f);
             ImGui::DragScalar("Sprite id", ImGuiDataType_U16, &id, 1.0f);
         }

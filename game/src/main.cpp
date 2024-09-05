@@ -24,11 +24,6 @@ auto main() -> int {
     setup_raylib();
     SetExitKey(KEY_DELETE);
     rlImGuiSetup(true);
-
-    auto img = LoadImage("./resources/blue.png");
-    auto img2 = LoadImage("./resources/orange.png");
-    auto txt = LoadTextureFromImage(img);
-    auto txt2 = LoadTextureFromImage(img2);
     auto registry = entt::registry();
     auto toolbox = ge::Toolbox<
             Console_t,
@@ -39,8 +34,8 @@ auto main() -> int {
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
     auto &asset_manager = registry.ctx().emplace<ge::AssetManager>();
 
-    asset_manager.add<ge::MultiTexture>("blue",ge::MultiTexture(txt));
-    asset_manager.add<ge::MultiTexture>("orange",ge::MultiTexture(txt2));
+    asset_manager.add<ge::MultiTexture>("blue",ge::LoadMultiTexture("./resources/blue.png"));
+    asset_manager.add<ge::MultiTexture>("orange",ge::LoadMultiTexture("./resources/orange.png"));
     auto entity = registry.create();
     registry.emplace<Dead>(entity);
     registry.emplace<Alive>(entity);

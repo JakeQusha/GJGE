@@ -26,15 +26,26 @@ namespace ge {
                     .width = static_cast<float>(cell_size_x),
                     .height = static_cast<float>(cell_size_y)};
         }
+
         MultiTexture() = default;
+
         explicit MultiTexture(Texture2D texture2D) : texture(texture2D), cell_size_x(
                 std::abs(texture.width)), cell_size_y(
                 std::abs(texture.height)) {}
 
         MultiTexture(Texture2D texture2D, uint16_t cell_size_x, uint16_t cell_size_y) : texture(texture2D),
-                                                                                         cell_size_x(cell_size_x),
-                                                                                         cell_size_y(cell_size_y) {}
+                                                                                        cell_size_x(cell_size_x),
+                                                                                        cell_size_y(cell_size_y) {}
 
     };
+
+    template<typename ...Args>
+    requires std::constructible_from<MultiTexture, Texture2D, Args...>
+    MultiTexture LoadMultiTexture(const char *fileName, Args &&... args) {
+        const auto image = LoadImage(fileName);
+        const auto texture = LoadTextureFromImage(image);
+        UnloadImage(image);
+        return MultiTexture(texture, args...);
+    }
 
 }

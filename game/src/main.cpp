@@ -8,6 +8,8 @@
 #include "gui/toolbox.hpp"
 #include "components/sprite.hpp"
 #include "typedefs.hpp"
+#include "templates.hpp"
+#include "template.hpp"
 
 
 static void setup_raylib() {
@@ -33,9 +35,11 @@ auto main() -> int {
     auto &inspector = std::get<Inspector_t>(toolbox.windows);
     auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
     auto &asset_manager = registry.ctx().emplace<ge::AssetManager>();
-
     asset_manager.add<ge::MultiTexture>("blue",ge::LoadMultiTexture("./resources/blue.png"));
     asset_manager.add<ge::MultiTexture>("orange",ge::LoadMultiTexture("./resources/orange.png"));
+
+    generate_templates(registry);
+
     auto entity = registry.create();
     registry.emplace<Dead>(entity);
     registry.emplace<Alive>(entity);
@@ -45,16 +49,9 @@ auto main() -> int {
         console.add_log(ge::LogLevel::INFO, "TEST");
     });
     key_manager.assign_key(KEY_Q, "essing");
-    //auto &asset_manager = registry.ctx().emplace<ge::AssetManager<Texture,Sound>>();
-    auto stary = ge::create(registry,"stary");
-    auto & sprite =registry.emplace<ge::comp::Sprite>(stary);
-    sprite.texture = asset_manager.get<ge::MultiTexture>("blue");
-    auto mlody = ge::create(registry,"mlody");
-    auto & sprite1 =registry.emplace<ge::comp::Sprite>(mlody);
-    sprite1.texture = asset_manager.get<ge::MultiTexture>("orange");
-    auto niemowle = ge::create(registry,"mniemowle");
-    ge::add_relation(registry,mlody,niemowle);
-    ge::add_relation(registry,stary,mlody);
+
+    ge::instantiate_template(registry, "stary");
+    ge::instantiate_template(registry, "stary");
     while (!WindowShouldClose()) {
         console.empty_logger();
         BeginDrawing();

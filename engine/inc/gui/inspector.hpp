@@ -7,6 +7,7 @@
 #include "entity_management.hpp"
 #include <variant>
 #include "logs.hpp"
+#include "template.hpp"
 
 namespace ge {
     struct InspectorIntegration {
@@ -65,6 +66,15 @@ namespace ge {
                         ge::logger.add_log(ge::LogLevel::INFO, "New Entity Created");
                         const auto entity = registry.create();
                         registry.emplace<InspectorIntegration>(entity, "New entity");
+                    }
+
+                    if (ImGui::BeginMenu("New Entity From Template")) {
+                        for (auto &asset: registry.ctx().get<AssetManager>().get_all<ge::Template>()) {
+                            if (ImGui::MenuItem(asset.first)) {
+                                ge::instantiate_template(registry, asset.first);
+                            }
+                        }
+                        ImGui::EndMenu();
                     }
 
                     ImGui::EndMenu();
@@ -242,7 +252,7 @@ namespace ge {
                         entt::entity test_e = entity;
                         while (true) {
                             auto *child_comp = registry.try_get<comp::Child>(test_e);
-                            if(!child_comp){
+                            if (!child_comp) {
                                 break;
                             }
                             test_e = child_comp->parent;
@@ -258,7 +268,7 @@ namespace ge {
                         entt::entity test_e = entity;
                         while (true) {
                             auto *child_comp = registry.try_get<comp::Child>(test_e);
-                            if(!child_comp){
+                            if (!child_comp) {
                                 break;
                             }
                             test_e = child_comp->parent;

@@ -242,6 +242,9 @@ namespace ge {
                         entt::entity test_e = entity;
                         while (true) {
                             auto *child_comp = registry.try_get<comp::Child>(test_e);
+                            if(!child_comp){
+                                break;
+                            }
                             test_e = child_comp->parent;
                             if (test_e == child) {
                                 goto DnDEnd;
@@ -255,6 +258,9 @@ namespace ge {
                         entt::entity test_e = entity;
                         while (true) {
                             auto *child_comp = registry.try_get<comp::Child>(test_e);
+                            if(!child_comp){
+                                break;
+                            }
                             test_e = child_comp->parent;
                             if (test_e == child) {
                                 goto DnDEnd;

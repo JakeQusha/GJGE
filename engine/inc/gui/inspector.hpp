@@ -187,7 +187,7 @@ namespace ge {
                         logger.add_log(LogLevel::ERR, "No component selected");
                         return;
                     }
-                    registry.emplace_or_replace<T>(entity, std::forward<decltype(arg)>(arg));
+                    emplace<T>(registry,entity, std::forward<decltype(arg)>(arg));
                 }, generated_component);
             }
 
@@ -375,8 +375,10 @@ namespace ge {
                         if constexpr (std::is_empty_v<Comp>) {
                             Comp::inspect();
                         } else {
-                            auto &component = registry.get<Comp>(entity);
-                            component.inspect(registry, entity);
+                            auto *component = registry.try_get<Comp>(entity);
+                            if(component){
+                                component->inspect(registry, entity);
+                            }
                         }
                     }
 

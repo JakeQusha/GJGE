@@ -10,7 +10,7 @@
 #include "typedefs.hpp"
 #include "templates.hpp"
 #include "template.hpp"
-
+#include "components/collision2D.hpp"
 
 static void setup_raylib() {
     const auto display = GetCurrentMonitor();
@@ -45,9 +45,11 @@ auto main() -> int {
     registry.emplace<Alive>(entity);
     registry.emplace<ge::comp::Transform2D>(entity);
     key_manager.assign_key(KEY_D, "essing");
+
     key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() {
         console.add_log(ge::LogLevel::INFO, "TEST");
     });
+
     key_manager.assign_key(KEY_Q, "essing");
 
     ge::instantiate_template(registry, "stary");
@@ -57,7 +59,8 @@ auto main() -> int {
         BeginDrawing();
         ClearBackground(GREEN);
         DrawFPS(15, 15);
-//        DrawText(std::format("{}",huj).c_str(),100,100,20,RED);
+        ge::draw_debug_colliders(registry);
+        ge::draw_sprites(registry);
         rlImGuiBegin();
         ImGui::ShowDemoWindow();
         toolbox.draw_gui();
@@ -65,7 +68,6 @@ auto main() -> int {
         EndDrawing();
         ge::notify_keyboard_press_system(key_manager);
         ge::calculate_global_transform(registry);
-        ge::comp::draw_sprites(registry);
     }
 
 

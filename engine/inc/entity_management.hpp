@@ -15,7 +15,7 @@ namespace ge {
                 if (!registry.all_of<T>(entity)) {
                     emplace<T>(registry, entity);
                 }
-            }, ...);
+            }(), ...);
         }
     };
 

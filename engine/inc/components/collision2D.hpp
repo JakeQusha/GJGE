@@ -14,6 +14,7 @@ namespace ge {
             bool logical_only{false};
             Vector2 offset{.5,.5};
             Vector2 size{50,50};
+            std::optional<std::function<void(entt::registry&,entt::entity,entt::entity)>> on_collision_callback;
             void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity);
         };
     }

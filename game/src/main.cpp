@@ -60,6 +60,7 @@ auto main() -> int {
         ClearBackground(GREEN);
         DrawFPS(15, 15);
         ge::draw_debug_colliders(registry);
+        ge::evaluate_AABB_Collisions(registry);
         ge::draw_sprites(registry);
         rlImGuiBegin();
         ImGui::ShowDemoWindow();

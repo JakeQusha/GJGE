@@ -17,5 +17,6 @@ namespace ge {
             void inspect([[maybe_unused]] entt::registry &registry, [[maybe_unused]] entt::entity entity);
         };
     }
+    void evaluate_AABB_Collisions(entt::registry &registry);
     void draw_debug_colliders(entt::registry &registry);
 }

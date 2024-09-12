@@ -1,6 +1,5 @@
 #include "components/collision2D.hpp"
 #include "raylib.h"
-#include "gui/logs.hpp"
 
 static Vector2 get_center(const ge::comp::Transform2D &transform, const ge::comp::AABBCollider &collider) {
     return {transform.global_position.x - collider.offset.x * collider.size.x * std::abs(transform.global_scale.x),
@@ -32,11 +31,11 @@ static void process_AABBCollision(entt::registry &registry, entt::entity first, 
         second_center.x < first_center.x + first_size.x &&
         first_center.y < second_center.y + second_size.y &&
         second_center.y < first_center.y + first_size.y) {
-        if(first_collider.on_collision_callback){
-            (*first_collider.on_collision_callback)(registry,first,second);
+        if (first_collider.on_collision_callback) {
+            (*first_collider.on_collision_callback)(registry, first, second);
         }
-        if(second_collider.on_collision_callback){
-            (*second_collider.on_collision_callback)(registry,second,first);
+        if (second_collider.on_collision_callback) {
+            (*second_collider.on_collision_callback)(registry, second, first);
         }
         if (first_collider.logical_only || second_collider.logical_only) {
             return;
@@ -48,11 +47,11 @@ static void process_AABBCollision(entt::registry &registry, entt::entity first, 
 
 void ge::evaluate_AABB_Collisions(entt::registry &registry) {
     auto view = registry.view<comp::AABBCollider>();
-    if(view.empty()){
+    if (view.empty()) {
         return;
     }
     for (auto i = 0u; i < view.size() - 1; i++) {
-        for (auto j = i+1; j < view.size() ; ++j) {
+        for (auto j = i + 1; j < view.size(); ++j) {
             process_AABBCollision(registry, view.begin()[i], view.begin()[j]);
         }
     }

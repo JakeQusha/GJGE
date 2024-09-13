@@ -3,7 +3,7 @@
 #include <cstdint>
 #include <cstring>
 namespace ge {
-enum class LogLevel { ERR, INFO, DEBUG, NONE };
+enum class LogLevel : uint8_t { ERR, INFO, DEBUG, NONE };
 struct Log {
     LogLevel ll;
     char* log;
@@ -19,7 +19,7 @@ struct Log {
 
     Log(LogLevel log_level, const char* message, bool command_caused) : ll(log_level), command_caused(command_caused) {
 
-        size_t message_len = strlen(message);
+        size_t const message_len = strlen(message);
         log = new char[9 + message_len];
         uint8_t offset = 0;
         switch (ll) {

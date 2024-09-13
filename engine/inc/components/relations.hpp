@@ -12,9 +12,9 @@ struct Child {
 };
 } // namespace comp
 
-bool add_relation(entt::registry& registry, entt::entity parent, entt::entity child);
+auto add_relation(entt::registry& registry, entt::entity parent, entt::entity child) -> bool;
 
-bool remove_relation(entt::registry& registry, entt::entity parent, entt::entity child);
+auto remove_relation(entt::registry& registry, entt::entity parent, entt::entity child) -> bool;
 
 void relations_call_on_delete_entity(entt::registry& registry, entt::entity entity);
 } // namespace ge

@@ -13,17 +13,17 @@ class AssetManager {
 
 public:
     template <typename T>
-    [[nodiscard]] T& get(const char* id) {
+    [[nodiscard]] auto get(const char* id) -> T& {
         return std::any_cast<T&>(assets[typeid(T).name()].at(id));
     }
 
     template <typename T>
-    [[nodiscard]] T* get_ptr(const char* id) {
+    [[nodiscard]] auto get_ptr(const char* id) -> T* {
         return std::any_cast<T*>(&assets[typeid(T).name()].at(id));
     }
 
     template <typename T>
-    [[nodiscard]] std::unordered_map<const char*, std::any>& get_all() {
+    [[nodiscard]] auto get_all() -> std::unordered_map<const char*, std::any>& {
         return assets[typeid(T).name()];
     }
 

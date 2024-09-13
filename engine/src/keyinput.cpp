@@ -2,7 +2,7 @@
 #include <raylib.h>
 #include "keyinput.hpp"
 
-[[nodiscard]] auto ge::KeyManager::make_subscriber(callback_t&& callback, KeyboardEvent type) -> Subscriber {
+[[nodiscard]] auto ge::KeyManager::make_subscriber(callback_t&& callback, const KeyboardEvent type) -> Subscriber {
     static subscriber_id_t id = 0;
     return Subscriber{type, std::move(callback), id++};
 }

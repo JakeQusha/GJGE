@@ -6,8 +6,8 @@
 #include <imgui.h>
 
 namespace ge {
-typedef const std::function<void(LogLevel ll, const char* message)>& LogCallback;
-typedef std::vector<std::string> Params;
+using LogCallback = const std::function<void(LogLevel, const char*)>&;
+using Params = std::vector<std::string>;
 template <typename T>
 concept ConsoleCommand = requires(const char* command, entt::registry& registry, LogCallback add_log, Params& params) {
     { T::name } -> std::convertible_to<const char*>;
@@ -46,7 +46,7 @@ public:
 private:
     void add_log_command(LogLevel ll, const char* message) { log_history.emplace_back(ll, message, true); }
 
-    int text_edit(ImGuiInputTextCallbackData* data) {
+    auto text_edit(ImGuiInputTextCallbackData* data) -> int {
         switch (data->EventFlag) {
         case ImGuiInputTextFlags_CallbackCompletion:
             // TODO
@@ -70,11 +70,13 @@ private:
                 }
             }
             break;
+        default:
+            break;
         }
         return 0;
     }
 
-    bool parse_command(std::unique_ptr<char[]>& command, const char* command_w_params, Params& params) {
+    auto parse_command(std::unique_ptr<char[]>& command, const char* command_w_params, Params& params) -> bool {
         const char* first_space = strchr(command_w_params, ' ');
         if (!first_space) {
             command = std::make_unique<char[]>(strlen(command_w_params) + 1);
@@ -186,9 +188,10 @@ public:
             logger.logs.pop();
         }
     }
-    void draw_gui() {
-        if (!is_open)
+    void draw_gui() { // NOLINT
+        if (!is_open) {
             return;
+        }
         using namespace ImGui;
         // init
         ImGui::SetNextWindowSize(ImVec2(500, 500), ImGuiCond_FirstUseEver);

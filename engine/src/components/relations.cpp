@@ -3,7 +3,7 @@
 #include <ranges>
 #include "gui/logs.hpp"
 
-bool ge::add_relation(entt::registry& registry, entt::entity parent, entt::entity child) {
+auto ge::add_relation(entt::registry& registry, entt::entity parent, entt::entity child) -> bool {
     if (registry.all_of<comp::Child>(child)) {
         return false;
     }
@@ -17,7 +17,7 @@ bool ge::add_relation(entt::registry& registry, entt::entity parent, entt::entit
     return true;
 }
 
-bool ge::remove_relation(entt::registry& registry, entt::entity parent, entt::entity child) {
+auto ge::remove_relation(entt::registry& registry, entt::entity parent, entt::entity child) -> bool {
     if (!registry.all_of<comp::Parent>(parent) || !registry.all_of<comp::Child>(child)) {
         return false;
     }
@@ -27,10 +27,11 @@ bool ge::remove_relation(entt::registry& registry, entt::entity parent, entt::en
     }
     auto& parent_comp = registry.get<comp::Parent>(parent);
     for (auto [i, x] : std::views::enumerate(parent_comp.children)) {
-        if (x != child)
+        if (x != child) {
             continue;
+        }
         registry.remove<comp::Child>(child);
-        std::swap(parent_comp.children.back(), parent_comp.children.at(i));
+        std::swap(parent_comp.children.back(), parent_comp.children.at(static_cast<size_t>(i)));
         parent_comp.children.pop_back();
         if (parent_comp.children.empty()) {
             registry.erase<comp::Parent>(parent);

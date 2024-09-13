@@ -1,0 +1,20 @@
+Checks: '
+bugprone-*,
+-bugprone-easily-swappable-parameters,
+llvm-*,
+-llvm-include-order,
+clang-analyzer-*,
+clang-analyzer-cplusplus*,
+performance-*,
+readability-*,
+-readability-identifier-length,
+-readability-uppercase-literal-suffix,
+-readability-magic-numbers,
+-readability-implicit-bool-conversion,
+modernize-*,
+-modernize-avoid-c-arrays,
+misc-*,
+-misc-non-private-member-variables-in-classes,
+-misc-use-anonymous-namespace,
+portability-*,'
+FormatStyle: none

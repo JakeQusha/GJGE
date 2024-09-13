@@ -36,7 +36,6 @@ void inspect(T& t, entt::registry& registry, entt::entity entity) {
 template <InspectableComponent... Component>
 struct Inspector {
     static constexpr auto name = "Inspector";
-    static constexpr auto EntityDragDropTypeName = "Entity";
     std::variant<Component..., std::monostate> generated_component = std::monostate{};
     entt::registry& registry;
     std::array<bool, sizeof...(Component)> component_filter{};
@@ -103,9 +102,9 @@ struct Inspector {
 
         // Begin right column
         ImGui::BeginGroup();
-        ImVec2 rightColumnSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+        const ImVec2 rightColumnSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
         if (!current_entity) {
-            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - rightColumnSize.x / 2 - 70);
+            ImGui::SetCursorPosX(ImGui::GetWindowWidth() - (rightColumnSize.x / 2) - 70);
             ImGui::Text("No entity selected");
             ImGui::PopStyleVar();
             ImGui::EndGroup();
@@ -152,8 +151,9 @@ private:
     }
 
     void display_component_creator() {
-        if (!is_creator_open)
+        if (!is_creator_open) {
             return;
+}
         if (wait) {
             wait = false;
             return;
@@ -162,7 +162,7 @@ private:
         ImGui::SeparatorText("Component creator");
 
         static const char* chosen_component_name = "None";
-        ImVec2 text_size = ImGui::CalcTextSize(chosen_component_name);
+        const ImVec2 text_size = ImGui::CalcTextSize(chosen_component_name);
         ImGui::BeginChild("type", ImVec2(-120, 20), ImGuiWindowFlags_None);
         ImGui::Text("Chosen type: ");
         ImGui::SameLine();
@@ -208,7 +208,7 @@ private:
         ImGui::EndChild();
     }
 
-    void display_entity_list_entry(entt::entity entity) {
+    void display_entity_list_entry(entt::entity entity) { // NOLINT
         if (!registry.all_of<InspectorIntegration>(entity)) {
             registry.emplace<InspectorIntegration>(entity, "Unknown");
         }
@@ -234,7 +234,7 @@ private:
             tree_flags |= ImGuiTreeNodeFlags_Selected;
         }
         tree_flags |= parent_comp ? ImGuiTreeNodeFlags_None : ImGuiTreeNodeFlags_Leaf | ImGuiTreeNodeFlags_Bullet;
-        bool open = ImGui::TreeNodeEx("##", tree_flags, "%s", entity_name.c_str());
+        const bool open = ImGui::TreeNodeEx("##", tree_flags, "%s", entity_name.c_str());
         if (ImGui::IsItemFocused()) {
             current_entity = entity;
         }
@@ -256,12 +256,12 @@ private:
         }
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("child")) {
-                entt::entity child = *(entt::entity*)payload->Data;
+                const entt::entity child = *(entt::entity*)payload->Data;
                 auto* child_comp = registry.try_get<comp::Child>(child);
                 if (!child_comp) {
                     entt::entity test_e = entity;
                     while (true) {
-                        auto* child_comp = registry.try_get<comp::Child>(test_e);
+                        child_comp = registry.try_get<comp::Child>(test_e);
                         if (!child_comp) {
                             break;
                         }
@@ -273,11 +273,11 @@ private:
                     add_relation(registry, entity, child);
                     goto DnDEnd;
                 }
-                entt::entity parent = child_comp->parent;
+                const entt::entity parent = child_comp->parent;
                 if (parent != entity) {
                     entt::entity test_e = entity;
                     while (true) {
-                        auto* child_comp = registry.try_get<comp::Child>(test_e);
+                        child_comp = registry.try_get<comp::Child>(test_e);
                         if (!child_comp) {
                             break;
                         }
@@ -308,7 +308,7 @@ private:
 
     void iterate_components(auto&& f) { (f.template operator()<Component>(), ...); }
 
-    void display_entity_info() {
+    void display_entity_info() { // NOLINT
         entt::entity entity = *current_entity;
         ImGui::BeginChild("Entity Inspector", ImVec2(0, (is_creator_open ? (ImGui::GetWindowHeight() * .7f) : 0)),
                           ImGuiChildFlags_Border, ImGuiWindowFlags_None);

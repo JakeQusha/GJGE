@@ -8,5 +8,5 @@
 #include "gui/console_commands.hpp"
 #include "components/flags.hpp"
 #include "components/collision2D.hpp"
-typedef ge::Console<ge::hi_command, ge::echo_command> Console_t;
-typedef ge::Inspector<Alive, Dead, ge::comp::Transform2D, ge::comp::Sprite, ge::comp::AABBCollider> Inspector_t;
+using Console_t = ge::Console<ge::hi_command, ge::echo_command>;
+using Inspector_t = ge::Inspector<Alive, Dead, ge::comp::Transform2D, ge::comp::Sprite, ge::comp::AABBCollider>;

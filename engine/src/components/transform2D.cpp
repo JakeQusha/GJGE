@@ -1,9 +1,8 @@
 #include "components/transform2D.hpp"
 #include "components/relations.hpp"
-#include "raylib.h"
 #include "raymath.h"
 
-void ge::comp::Transform2D::inspect(entt::registry& registry, entt::entity entity) {
+void ge::comp::Transform2D::inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {
     ImGui::Text("Global Position: (%.2f, %.2f)", global_position.x, global_position.y);
     ImGui::Text("Global Rotation: %.2f", global_rotation);
     ImGui::Text("Global Scale: (%.2f, %.2f)", global_scale.x, global_scale.y);
@@ -11,7 +10,7 @@ void ge::comp::Transform2D::inspect(entt::registry& registry, entt::entity entit
     ImGui::DragFloat("Rotation", &rotation, 0.02f);
     ImGui::DragFloat2("Scale", &scale.x, 0.02f);
 }
-
+// NOLINTNEXTLINE
 static void calculate_transform(entt::registry& registry, entt::entity entity, ge::comp::Transform2D& transform,
                                 entt::entity parent, bool force) {
     if (!force && transform._last_position.x == transform.position.x &&

@@ -6,13 +6,13 @@
 #include "entity_management.hpp"
 
 namespace ge {
-typedef std::function<void(entt::registry&, AssetManager&, entt::entity)> Recipe_t;
+using Recipe_t = std::function<void (entt::registry &, AssetManager &, entt::entity)>;
 struct Template {
     const char* name;
     Recipe_t recipe;
 };
 
-void make_template(entt::registry& registry, const char* name, Recipe_t&& recipie);
+void make_template(entt::registry& registry, const char* name, Recipe_t&& recipe);
 
-entt::entity instantiate_template(entt::registry& registry, const char* name);
+auto instantiate_template(entt::registry& registry, const char* name) -> entt::entity;
 } // namespace ge

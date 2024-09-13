@@ -28,7 +28,7 @@ concept HasDependencies = requires {
 
 void kill(entt::registry& registry, entt::entity entity);
 
-entt::entity create(entt::registry& registry, const char* name);
+auto create(entt::registry& registry, const char* name) -> entt::entity;
 
 template <typename T, typename... Args>
 void emplace(entt::registry& registry, entt::entity entity, const Args&... args) {

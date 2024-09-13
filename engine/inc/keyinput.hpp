@@ -22,7 +22,7 @@ private:
         KeyboardKey key;
         std::vector<subscriber_id_t> subscribers;
     };
-    std::unordered_map<const char*, AssignedKey> keys{};
+    std::unordered_map<const char*, AssignedKey> keys;
     struct Subscriber {
         KeyboardEvent type;
         callback_t callback;

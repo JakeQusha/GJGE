@@ -10,14 +10,14 @@ struct MultiTexture {
     int32_t cell_size_x;
     int32_t cell_size_y;
 
-    [[nodiscard]] Rectangle rect() const {
+    [[nodiscard]] auto rect() const -> Rectangle {
         return Rectangle{.x = 0.f,
                          .y = 0.f,
                          .width = static_cast<float>(texture.width),
                          .height = static_cast<float>(texture.height)};
     }
 
-    [[nodiscard]] Rectangle rect_multi(uint16_t sprite_id) const {
+    [[nodiscard]] auto rect_multi(uint16_t sprite_id) const -> Rectangle {
         auto columns_in_texture = texture.width / cell_size_x;
         auto row = sprite_id / columns_in_texture;
         auto column = sprite_id % columns_in_texture;
@@ -38,7 +38,7 @@ struct MultiTexture {
 
 template <typename... Args>
     requires std::constructible_from<MultiTexture, Texture2D, Args...>
-MultiTexture LoadMultiTexture(const char* fileName, Args&&... args) {
+auto LoadMultiTexture(const char* fileName, Args&&... args) -> MultiTexture {
     const auto image = LoadImage(fileName);
     const auto texture = LoadTextureFromImage(image);
     UnloadImage(image);

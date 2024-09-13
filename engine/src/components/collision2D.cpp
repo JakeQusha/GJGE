@@ -1,12 +1,12 @@
 #include "components/collision2D.hpp"
 #include "raylib.h"
 
-static Vector2 get_center(const ge::comp::Transform2D& transform, const ge::comp::AABBCollider& collider) {
-    return {transform.global_position.x - collider.offset.x * collider.size.x * std::abs(transform.global_scale.x),
-            transform.global_position.y - collider.offset.y * collider.size.y * std::abs(transform.global_scale.y)};
+static auto get_center(const ge::comp::Transform2D& transform, const ge::comp::AABBCollider& collider) -> Vector2 {
+    return {transform.global_position.x - (collider.offset.x * collider.size.x * std::abs(transform.global_scale.x)),
+            transform.global_position.y - (collider.offset.y * collider.size.y * std::abs(transform.global_scale.y))};
 }
 
-static Vector2 get_size(const ge::comp::Transform2D& transform, const ge::comp::AABBCollider& collider) {
+static auto get_size(const ge::comp::Transform2D& transform, const ge::comp::AABBCollider& collider) -> Vector2 {
     return {collider.size.x * std::abs(transform.global_scale.x), collider.size.y * std::abs(transform.global_scale.y)};
 }
 
@@ -55,7 +55,7 @@ void ge::evaluate_AABB_Collisions(entt::registry& registry) {
     }
 }
 
-void ge::comp::AABBCollider::inspect(entt::registry& registry, entt::entity entity) {
+void ge::comp::AABBCollider::inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {
     ImGui::DragFloat2("Offset:", &offset.x, 0.01f);
     ImGui::DragFloat2("Size:", &size.x, 1, 0);
     ImGui::Checkbox("Logical Only", &logical_only);

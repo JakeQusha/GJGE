@@ -1,36 +1,34 @@
 #include "components/collision2D.hpp"
 #include "raylib.h"
 
-static Vector2 get_center(const ge::comp::Transform2D &transform, const ge::comp::AABBCollider &collider) {
+static Vector2 get_center(const ge::comp::Transform2D& transform, const ge::comp::AABBCollider& collider) {
     return {transform.global_position.x - collider.offset.x * collider.size.x * std::abs(transform.global_scale.x),
             transform.global_position.y - collider.offset.y * collider.size.y * std::abs(transform.global_scale.y)};
 }
 
-static Vector2 get_size(const ge::comp::Transform2D &transform, const ge::comp::AABBCollider &collider) {
+static Vector2 get_size(const ge::comp::Transform2D& transform, const ge::comp::AABBCollider& collider) {
     return {collider.size.x * std::abs(transform.global_scale.x), collider.size.y * std::abs(transform.global_scale.y)};
 }
 
-void ge::draw_debug_colliders(entt::registry &registry) {
+void ge::draw_debug_colliders(entt::registry& registry) {
     auto view = registry.view<comp::AABBCollider, comp::Transform2D>();
-    for (auto &&[entity, collider, transform]: view.each()) {
+    for (auto&& [entity, collider, transform] : view.each()) {
         auto center = get_center(transform, collider);
         auto size = get_size(transform, collider);
-        DrawRectangleLines(static_cast<int>(center.x), static_cast<int>(center.y),
-                           static_cast<int>(size.x), static_cast<int>(size.y), BLUE);
+        DrawRectangleLines(static_cast<int>(center.x), static_cast<int>(center.y), static_cast<int>(size.x),
+                           static_cast<int>(size.y), BLUE);
     }
 }
 
-static void process_AABBCollision(entt::registry &registry, entt::entity first, entt::entity second) {
-    auto &&[first_collider, first_transform] = registry.get<ge::comp::AABBCollider, ge::comp::Transform2D>(first);
-    auto &&[second_collider, second_transform] = registry.get<ge::comp::AABBCollider, ge::comp::Transform2D>(second);
+static void process_AABBCollision(entt::registry& registry, entt::entity first, entt::entity second) {
+    auto&& [first_collider, first_transform] = registry.get<ge::comp::AABBCollider, ge::comp::Transform2D>(first);
+    auto&& [second_collider, second_transform] = registry.get<ge::comp::AABBCollider, ge::comp::Transform2D>(second);
     const auto first_center = get_center(first_transform, first_collider);
     const auto first_size = get_size(first_transform, first_collider);
     const auto second_center = get_center(second_transform, second_collider);
     const auto second_size = get_size(second_transform, second_collider);
-    if (first_center.x < second_center.x + second_size.x &&
-        second_center.x < first_center.x + first_size.x &&
-        first_center.y < second_center.y + second_size.y &&
-        second_center.y < first_center.y + first_size.y) {
+    if (first_center.x < second_center.x + second_size.x && second_center.x < first_center.x + first_size.x &&
+        first_center.y < second_center.y + second_size.y && second_center.y < first_center.y + first_size.y) {
         if (first_collider.on_collision_callback) {
             (*first_collider.on_collision_callback)(registry, first, second);
         }
@@ -45,7 +43,7 @@ static void process_AABBCollision(entt::registry &registry, entt::entity first, 
     }
 }
 
-void ge::evaluate_AABB_Collisions(entt::registry &registry) {
+void ge::evaluate_AABB_Collisions(entt::registry& registry) {
     auto view = registry.view<comp::AABBCollider>();
     if (view.empty()) {
         return;
@@ -57,7 +55,7 @@ void ge::evaluate_AABB_Collisions(entt::registry &registry) {
     }
 }
 
-void ge::comp::AABBCollider::inspect(entt::registry &registry, entt::entity entity) {
+void ge::comp::AABBCollider::inspect(entt::registry& registry, entt::entity entity) {
     ImGui::DragFloat2("Offset:", &offset.x, 0.01f);
     ImGui::DragFloat2("Size:", &size.x, 1, 0);
     ImGui::Checkbox("Logical Only", &logical_only);

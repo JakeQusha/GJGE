@@ -22,21 +22,19 @@ static void setup_raylib() {
     InitAudioDevice();
     SetTargetFPS(60);
 }
+
 auto main() -> int {
     setup_raylib();
     SetExitKey(KEY_DELETE);
     rlImGuiSetup(true);
     auto registry = entt::registry();
-    auto toolbox = ge::Toolbox<
-            Console_t,
-            Inspector_t
-    >(registry);
-    auto &console = std::get<Console_t>(toolbox.windows);
-    auto &inspector = std::get<Inspector_t>(toolbox.windows);
-    auto &key_manager = registry.ctx().emplace<ge::KeyManager>();
-    auto &asset_manager = registry.ctx().emplace<ge::AssetManager>();
-    asset_manager.add<ge::MultiTexture>("blue",ge::LoadMultiTexture("./resources/blue.png"));
-    asset_manager.add<ge::MultiTexture>("orange",ge::LoadMultiTexture("./resources/orange.png"));
+    auto toolbox = ge::Toolbox<Console_t, Inspector_t>(registry);
+    auto& console = std::get<Console_t>(toolbox.windows);
+    auto& inspector = std::get<Inspector_t>(toolbox.windows);
+    auto& key_manager = registry.ctx().emplace<ge::KeyManager>();
+    auto& asset_manager = registry.ctx().emplace<ge::AssetManager>();
+    asset_manager.add<ge::MultiTexture>("blue", ge::LoadMultiTexture("./resources/blue.png"));
+    asset_manager.add<ge::MultiTexture>("orange", ge::LoadMultiTexture("./resources/orange.png"));
 
     generate_templates(registry);
 
@@ -46,9 +44,7 @@ auto main() -> int {
     registry.emplace<ge::comp::Transform2D>(entity);
     key_manager.assign_key(KEY_D, "essing");
 
-    key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() {
-        console.add_log(ge::LogLevel::INFO, "TEST");
-    });
+    key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() { console.add_log(ge::LogLevel::INFO, "TEST"); });
 
     key_manager.assign_key(KEY_Q, "essing");
 
@@ -71,8 +67,7 @@ auto main() -> int {
         ge::calculate_global_transform(registry);
     }
 
-
-    exit:
+exit:
     CloseAudioDevice();
     rlImGuiShutdown();
     CloseWindow();

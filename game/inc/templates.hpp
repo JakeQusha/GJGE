@@ -2,4 +2,4 @@
 
 #include "entt.hpp"
 
-void generate_templates(entt::registry &registry);
+void generate_templates(entt::registry& registry);

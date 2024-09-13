@@ -4,20 +4,22 @@
 #include <print>
 
 namespace ge {
-    using Error = std::string;
-    template <typename T> using Expected = std::expected<T, Error>;
+using Error = std::string;
+template <typename T>
+using Expected = std::expected<T, Error>;
 
-    [[noreturn]] inline void throw_error(const Error &error) {
-        std::println(stderr, "Error: {}", error);
-        std::exit(1);
+[[noreturn]] inline void throw_error(const Error& error) {
+    std::println(stderr, "Error: {}", error);
+    std::exit(1);
+}
+
+template <typename T>
+auto unwrap(const Expected<T>& exp) -> T {
+    if (!exp.has_value()) {
+        throw_error(exp.error());
     }
 
-    template <typename T> auto unwrap(const Expected<T> &exp) -> T {
-        if (!exp.has_value()) {
-            throw_error(exp.error());
-        }
-
-        return exp.value();
-    }
+    return exp.value();
+}
 
 } // namespace ge

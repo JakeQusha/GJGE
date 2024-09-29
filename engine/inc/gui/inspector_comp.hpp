@@ -5,7 +5,7 @@ template <typename T>
 void display_asset_manager_picker(const char* asset_name, std::optional<T>& asset, ge::AssetManager am) {
     if (ImGui::BeginPopup(asset_name)) {
         for (auto&& [item_name, item] : am.get_all<T>()) {
-            if (ImGui::MenuItem(item_name, nullptr)) {
+            if (ImGui::MenuItem(item_name.c_str(), nullptr)) {
                 asset = std::any_cast<T>(item);
                 ImGui::CloseCurrentPopup();
             }

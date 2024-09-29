@@ -69,8 +69,8 @@ struct Inspector {
 
                 if (ImGui::BeginMenu("New Entity From Template")) {
                     for (auto& asset : registry.ctx().get<AssetManager>().get_all<ge::Template>()) {
-                        if (ImGui::MenuItem(asset.first)) {
-                            ge::instantiate_template(registry, asset.first);
+                        if (ImGui::MenuItem(asset.first.c_str())) {
+                            ge::instantiate_template(registry, asset.first.c_str());
                         }
                     }
                     ImGui::EndMenu();

@@ -1,13 +1,13 @@
 # GJGE (WIP)
 
-GJGE ia a Game Dev Toolkit written in C++23. Intended to be used in the future by me and my friends during game jam competitions. Project is still in very early stage so expect big changes and major reconstructions.
+GJGE ia a Game Dev Toolkit written in C++23. Intended to be used in the future by me and my friends during game jam competitions. The project is still in very early stage so expect big changes and major reconstructions.
 
 ## Implemented features
 ### Tools
 - Full fledged **Inspector** for managing entities and debugging
 - **Console** with support for custom commands and logging
 
-### Libary 
+### Library 
 - **Entity Hierarchy**
 - Performant **input system**
 - **Asset Manager**

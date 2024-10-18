@@ -1,4 +1,4 @@
-set(EXEC_NAME "main")
+set(EXEC_NAME "Demo")
 set(SOURCE_FILES src/main.cpp src/templates.cpp)
 file(GLOB_RECURSE HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/inc/*.hpp)
 add_executable(${EXEC_NAME} ${SOURCE_FILES} ${HEADER_FILES})

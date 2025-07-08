@@ -1,5 +1,5 @@
-#include "templates.hpp"
 #include "template.hpp"
+#include "scene.hpp"
 #include "components/sprite.hpp"
 #include "components/collision2D.hpp"
 #include "components/relations.hpp"
@@ -27,3 +27,4 @@ void generate_templates(entt::registry& registry) {
             };
         });
 }
+

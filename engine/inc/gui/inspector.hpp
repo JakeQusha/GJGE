@@ -54,6 +54,9 @@ struct Inspector {
         if (!is_open) {
             return;
         }
+        if (current_entity && !registry.valid(*current_entity)) {
+            current_entity = std::nullopt;
+        }
         ImGui::SetNextWindowSize(ImVec2(600, 500), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin(name, &is_open, ImGuiWindowFlags_MenuBar)) [[unlikely]] {
             ImGui::End();

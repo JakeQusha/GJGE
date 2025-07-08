@@ -2,7 +2,7 @@
 #include "entity_management.hpp"
 void ge::make_template(entt::registry& registry, const char* name, Recipe_t&& recipe) {
     auto& asset_manager = registry.ctx().get<AssetManager>();
-    asset_manager.emplace<Template>(name, name, std::forward<Recipe_t&&>(recipe));
+    asset_manager.emplace<Template>(name, name, std::forward<Recipe_t>(recipe));
 }
 
 auto ge::instantiate_template(entt::registry& registry, const char* name) -> entt::entity {

@@ -8,7 +8,7 @@
 #include "gui/toolbox.hpp"
 #include "components/sprite.hpp"
 #include "typedefs.hpp"
-#include "templates.hpp"
+#include "generators.hpp"
 #include "template.hpp"
 #include "components/collision2D.hpp"
 
@@ -33,27 +33,24 @@ auto main() -> int {
     auto& inspector = std::get<Inspector_t>(toolbox.windows);
     auto& key_manager = registry.ctx().emplace<ge::KeyManager>();
     auto& asset_manager = registry.ctx().emplace<ge::AssetManager>();
-    asset_manager.add<ge::MultiTexture>("blue", ge::LoadMultiTexture("./resources/blue.png"));
-    asset_manager.add<ge::MultiTexture>("orange", ge::LoadMultiTexture("./resources/orange.png"));
+    auto& scene_manager = registry.ctx().emplace<ge::SceneManager>(registry);
+    asset_manager.add("blue", ge::LoadMultiTexture("./resources/blue.png"));
+    asset_manager.add("orange", ge::LoadMultiTexture("./resources/orange.png"));
     generate_templates(registry);
-
-    auto entity = registry.create();
-    registry.emplace<Dead>(entity);
-    registry.emplace<Alive>(entity);
-    registry.emplace<ge::comp::Transform2D>(entity);
+    generate_scenes(scene_manager);
+    scene_manager.load_scene("def");
     key_manager.assign_key(KEY_D, "essing");
-
+    key_manager.assign_key(KEY_J, "ch_scene");
+    ge::logger.add_log(ge::LogLevel::INFO, scene_manager.get_current_scene());
+    key_manager.subscribe(ge::KeyboardEvent::PRESS, "ch_scene", [&] { scene_manager.load_scene("second"); });
     key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() { console.add_log(ge::LogLevel::INFO, "TEST"); });
-
     key_manager.assign_key(KEY_Q, "essing");
-
-    ge::instantiate_template(registry, "stary");
-    ge::instantiate_template(registry, "stary");
-    while (!WindowShouldClose()) {
+ while (!WindowShouldClose()) {
         console.empty_logger();
         BeginDrawing();
         ClearBackground(GREEN);
         DrawFPS(15, 15);
+        scene_manager.tick();
         ge::draw_debug_colliders(registry);
         ge::evaluate_AABB_Collisions(registry);
         ge::draw_sprites(registry);

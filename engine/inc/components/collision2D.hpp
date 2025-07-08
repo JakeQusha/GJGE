@@ -1,7 +1,6 @@
 #pragma once
 
 #include <raylib.h>
-#include <imgui.h>
 #include <entt.hpp>
 #include "entity_management.hpp"
 #include "components/transform2D.hpp"

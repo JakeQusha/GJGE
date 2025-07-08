@@ -1,6 +1,7 @@
 #include "components/transform2D.hpp"
 #include "components/relations.hpp"
 #include "raymath.h"
+#include <imgui.h>
 
 void ge::comp::Transform2D::inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {
     ImGui::Text("Global Position: (%.2f, %.2f)", global_position.x, global_position.y);

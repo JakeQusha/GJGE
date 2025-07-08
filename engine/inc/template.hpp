@@ -3,7 +3,6 @@
 #include <functional>
 #include "entt.hpp"
 #include "assets/asset_manager.hpp"
-#include "entity_management.hpp"
 
 namespace ge {
 using Recipe_t = std::function<void (entt::registry &, AssetManager &, entt::entity)>;

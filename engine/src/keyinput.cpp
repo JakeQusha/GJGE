@@ -2,9 +2,11 @@
 #include <raylib.h>
 #include "keyinput.hpp"
 
+#include <ranges>
+
 [[nodiscard]] auto ge::KeyManager::make_subscriber(callback_t&& callback, const KeyboardEvent type) -> Subscriber {
     static subscriber_id_t id = 0;
-    return Subscriber{type, std::move(callback), id++};
+    return Subscriber{.type = type, .callback = std::move(callback), .id = id++};
 }
 
 auto ge::KeyManager::subscribe(KeyboardEvent type, KeyboardKey key, callback_t&& callback) -> subscriber_id_t {
@@ -15,14 +17,13 @@ auto ge::KeyManager::subscribe(KeyboardEvent type, KeyboardKey key, callback_t&&
 }
 
 void ge::KeyManager::unsubscribe(subscriber_id_t id) {
-    for (auto& [key, subs] : subscribers) {
-        subs.erase(std::remove_if(subs.begin(), subs.end(), [id](const auto& sub) { return sub.id == id; }),
-                   subs.end());
+    for (auto& subs : subscribers | std::views::values) {
+        std::erase_if(subs, [id](const auto& sub) { return sub.id == id; });
     }
 }
 
-auto ge::KeyManager::subscribe(KeyboardEvent type, const char* key,
-                               callback_t&& callback) -> ge::KeyManager::subscriber_id_t {
+auto ge::KeyManager::subscribe(const KeyboardEvent type, const char* key, callback_t&& callback)
+    -> ge::KeyManager::subscriber_id_t {
     auto subscriber = make_subscriber(std::move(callback), type);
     const auto id = subscriber.id;
     auto& ak = keys.at(key);
@@ -31,7 +32,7 @@ auto ge::KeyManager::subscribe(KeyboardEvent type, const char* key,
     return id;
 }
 
-auto ge::KeyManager::get_key(const char* id) -> KeyboardKey { return keys.at(id).key; }
+auto ge::KeyManager::get_key(const char* id) const -> KeyboardKey { return keys.at(id).key; }
 
 void ge::KeyManager::assign_key(KeyboardKey key, const char* id) {
     // check if key is already assigned
@@ -44,7 +45,7 @@ void ge::KeyManager::assign_key(KeyboardKey key, const char* id) {
         for (size_t i = 0; i < subscribers[old_key].size(); ++i) {
             if (subscribers[old_key][i].id == sub) {
                 auto callback = std::move(subscribers[old_key][i].callback);
-                auto event = subscribers[old_key][i].type;
+                const auto event = subscribers[old_key][i].type;
                 subscribers[old_key].erase(subscribers[old_key].begin() + static_cast<long>(i));
                 auto subscriber = make_subscriber(std::move(callback), event);
                 sub = subscriber.id;
@@ -55,7 +56,7 @@ void ge::KeyManager::assign_key(KeyboardKey key, const char* id) {
     }
 }
 
-void ge::notify_keyboard_press_system(ge::KeyManager& manager) {
+void ge::notify_keyboard_press_system(const KeyManager& manager) {
     for (const auto& key_val : manager.subscribers) {
         for (const auto& sub : key_val.second) {
             using ST = KeyboardEvent;

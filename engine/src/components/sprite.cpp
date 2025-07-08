@@ -1,5 +1,5 @@
 #include "components/sprite.hpp"
-
+#include <raymath.h>
 void ge::draw_sprites(entt::registry& registry) {
     auto view = registry.view<comp::Sprite, comp::Transform2D>();
     for (auto&& [entity, sprite, transform] : view.each()) {

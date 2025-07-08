@@ -52,7 +52,7 @@ private:
             // TODO
             break;
         case ImGuiInputTextFlags_CallbackHistory:
-            if (data->EventKey == ImGuiKey_UpArrow && history_pos < (long)commands_history.size() - 1) {
+            if (data->EventKey == ImGuiKey_UpArrow && history_pos < static_cast<long>(commands_history.size()) - 1) {
                 history_pos++;
                 data->DeleteChars(0, data->BufTextLen);
                 data->InsertChars(0, commands_history.at(commands_history.size() - history_pos - 1).c_str());
@@ -76,7 +76,7 @@ private:
         return 0;
     }
 
-    auto parse_command(std::unique_ptr<char[]>& command, const char* command_w_params, Params& params) -> bool {
+    static auto parse_command(std::unique_ptr<char[]>& command, const char* command_w_params, Params& params) -> bool {
         const char* first_space = strchr(command_w_params, ' ');
         if (!first_space) {
             command = std::make_unique<char[]>(strlen(command_w_params) + 1);
@@ -276,8 +276,10 @@ public:
         };
         if (InputText(
                 "##", input_buffer, sizeof input_buffer, input_text_flags,
-                [](ImGuiInputTextCallbackData* data) -> int { return ((Console*)data->UserData)->text_edit(data); },
-                (void*)this)) {
+                [](ImGuiInputTextCallbackData* data) -> int {
+                    return static_cast<Console*>(data->UserData)->text_edit(data);
+                },
+                static_cast<void*>(this))) {
             summit();
         }
         SameLine();

@@ -2,7 +2,6 @@
 
 #include <entt.hpp>
 #include "gui/logs.hpp"
-#include "components/relations.hpp"
 
 namespace ge {
 template <typename T, typename... Args>
@@ -10,7 +9,7 @@ void emplace(entt::registry& registry, entt::entity entity, const Args&... args)
 
 template <typename... T>
 struct Dependencies {
-    void add_all([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) const {
+    static void add_all([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {
         (
             [&]() {
                 if (!registry.all_of<T>(entity)) {

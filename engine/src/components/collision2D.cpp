@@ -1,5 +1,6 @@
 #include "components/collision2D.hpp"
 #include "raylib.h"
+#include <imgui.h>
 
 static auto get_center(const ge::comp::Transform2D& transform, const ge::comp::AABBCollider& collider) -> Vector2 {
     return {transform.global_position.x - (collider.offset.x * collider.size.x * std::abs(transform.global_scale.x)),

@@ -15,7 +15,7 @@ public:
 
     void assign_key(KeyboardKey key, const char* id);
 
-    [[nodiscard]] auto get_key(const char* id) -> KeyboardKey;
+    [[nodiscard]] auto get_key(const char* id) const -> KeyboardKey;
 
 private:
     struct AssignedKey {
@@ -41,6 +41,6 @@ public:
     std::unordered_map<KeyboardKey, std::vector<Subscriber>> subscribers;
 };
 
-void notify_keyboard_press_system(KeyManager& manager);
+void notify_keyboard_press_system(const KeyManager& manager);
 
 } // namespace ge

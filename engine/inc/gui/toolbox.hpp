@@ -1,6 +1,5 @@
 #pragma once
 
-#include <functional>
 #include <imgui.h>
 namespace ge {
 template <typename T>

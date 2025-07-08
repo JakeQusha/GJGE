@@ -2,7 +2,6 @@
 
 #include <raylib.h>
 #include <cstdint>
-#include <cmath>
 
 namespace ge {
 struct MultiTexture {
@@ -29,10 +28,10 @@ struct MultiTexture {
 
     MultiTexture() = default;
 
-    explicit MultiTexture(Texture2D texture2D)
+    explicit MultiTexture(const Texture2D& texture2D)
         : texture(texture2D), cell_size_x(std::abs(texture.width)), cell_size_y(std::abs(texture.height)) {}
 
-    MultiTexture(Texture2D texture2D, uint16_t cell_size_x, uint16_t cell_size_y)
+    MultiTexture(const Texture2D& texture2D, const uint16_t cell_size_x, const uint16_t cell_size_y)
         : texture(texture2D), cell_size_x(cell_size_x), cell_size_y(cell_size_y) {}
 };
 

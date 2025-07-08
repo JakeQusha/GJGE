@@ -8,7 +8,7 @@
 #include <variant>
 #include "logs.hpp"
 #include "template.hpp"
-
+#include "components/relations.hpp"
 namespace ge {
 struct InspectorIntegration {
     std::string debug_name;
@@ -62,15 +62,15 @@ struct Inspector {
         if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("Entity")) {
                 if (ImGui::MenuItem("New Entity")) {
-                    ge::logger.add_log(ge::LogLevel::INFO, "New Entity Created");
+                    ge::logger.add_log(LogLevel::INFO, "New Entity Created");
                     const auto entity = registry.create();
                     registry.emplace<InspectorIntegration>(entity, "New entity");
                 }
 
                 if (ImGui::BeginMenu("New Entity From Template")) {
-                    for (auto& asset : registry.ctx().get<AssetManager>().get_all<ge::Template>()) {
-                        if (ImGui::MenuItem(asset.first.c_str())) {
-                            ge::instantiate_template(registry, asset.first.c_str());
+                    for (const auto& key : registry.ctx().get<AssetManager>().get_all<Template>() | std::views::keys) {
+                        if (ImGui::MenuItem(key.c_str())) {
+                            instantiate_template(registry, key.c_str());
                         }
                     }
                     ImGui::EndMenu();
@@ -132,7 +132,7 @@ private:
         ImGui::SeparatorText("Entity List");
         if (ImGui::BeginTable("##List", 1, ImGuiTableFlags_RowBg)) {
             for (auto entity : registry.view<entt::entity>()) {
-                if (registry.all_of<ge::comp::Child>(entity)) {
+                if (registry.all_of<comp::Child>(entity)) {
                     continue;
                 }
                 display_entity_list_entry(entity);
@@ -140,7 +140,7 @@ private:
 
             if (ImGui::BeginPopupContextWindow()) {
                 if (ImGui::MenuItem("Create new entity")) {
-                    ge::logger.add_log(ge::LogLevel::INFO, "New Entity Created");
+                    logger.add_log(LogLevel::INFO, "New Entity Created");
                     const auto entity = registry.create();
                     registry.emplace<InspectorIntegration>(entity, "New entity");
                 }
@@ -153,7 +153,7 @@ private:
     void display_component_creator() {
         if (!is_creator_open) {
             return;
-}
+        }
         if (wait) {
             wait = false;
             return;
@@ -256,7 +256,7 @@ private:
         }
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("child")) {
-                const entt::entity child = *(entt::entity*)payload->Data;
+                const entt::entity child = *static_cast<entt::entity*>(payload->Data);
                 auto* child_comp = registry.try_get<comp::Child>(child);
                 if (!child_comp) {
                     entt::entity test_e = entity;
@@ -306,7 +306,7 @@ private:
         ImGui::PopID();
     }
 
-    void iterate_components(auto&& f) { (f.template operator()<Component>(), ...); }
+    static void iterate_components(auto&& f) { (f.template operator()<Component>(), ...); }
 
     void display_entity_info() { // NOLINT
         entt::entity entity = *current_entity;
@@ -382,11 +382,8 @@ private:
                 if (header_open) {
                     if constexpr (std::is_empty_v<Comp>) {
                         Comp::inspect();
-                    } else {
-                        auto* component = registry.try_get<Comp>(entity);
-                        if (component) {
-                            component->inspect(registry, entity);
-                        }
+                    } else if (auto* component = registry.try_get<Comp>(entity)) {
+                        component->inspect(registry, entity);
                     }
                 }
 

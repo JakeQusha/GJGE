@@ -35,7 +35,6 @@ auto main() -> int {
     auto& asset_manager = registry.ctx().emplace<ge::AssetManager>();
     asset_manager.add<ge::MultiTexture>("blue", ge::LoadMultiTexture("./resources/blue.png"));
     asset_manager.add<ge::MultiTexture>("orange", ge::LoadMultiTexture("./resources/orange.png"));
-
     generate_templates(registry);
 
     auto entity = registry.create();

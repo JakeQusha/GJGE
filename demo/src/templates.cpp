@@ -2,6 +2,7 @@
 #include "template.hpp"
 #include "components/sprite.hpp"
 #include "components/collision2D.hpp"
+#include "components/relations.hpp"
 void generate_templates(entt::registry& registry) {
     ge::make_template(registry, "stary",
                       [](entt::registry& registry, ge::AssetManager& asset_manager, entt::entity entity) {

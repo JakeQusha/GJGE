@@ -54,7 +54,7 @@ void ge::relations_call_on_delete_entity(entt::registry& registry, entt::entity 
         }
     }
     if (registry.all_of<comp::Child>(entity)) {
-        auto& child = registry.get<comp::Child>(entity);
+        const auto& child = registry.get<comp::Child>(entity);
         remove_relation(registry, child.parent, entity);
     }
 }

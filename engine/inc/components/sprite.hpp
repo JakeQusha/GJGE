@@ -1,7 +1,6 @@
 #pragma once
 
 #include <raylib.h>
-#include <raymath.h>
 #include <imgui.h>
 #include <optional>
 #include <entt.hpp>
@@ -21,8 +20,8 @@ struct Sprite {
     Color tint = WHITE;
 
     void inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {
-        auto am = registry.ctx().get<ge::AssetManager>();
-        display_asset_manager_picker<ge::MultiTexture>("Texture", texture, am);
+        auto& am = registry.ctx().get<AssetManager>();
+        display_asset_manager_picker<MultiTexture>("Texture", texture, am);
         ImGui::DragFloat2("Offset", &offset.x, 0.01f);
         ImGui::DragScalar("Sprite id", ImGuiDataType_U16, &id, 1.0f);
     }

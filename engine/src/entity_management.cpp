@@ -9,7 +9,7 @@ void ge::kill(entt::registry& registry, entt::entity entity) {
     registry.destroy(entity);
 }
 
-entt::entity ge::create(entt::registry& registry, const char* name) {
+auto ge::create(entt::registry& registry, const char* name) -> entt::entity {
     auto entity = registry.create();
     registry.emplace<ge::InspectorIntegration>(entity, name);
     registry.emplace<ge::comp::Transform2D>(entity);

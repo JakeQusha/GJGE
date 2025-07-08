@@ -2,7 +2,6 @@
 
 #include <raylib.h>
 #include <entt.hpp>
-#include <imgui.h>
 
 namespace ge {
 namespace comp {

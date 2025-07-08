@@ -2,10 +2,7 @@
 
 #include <tuple>
 #include <unordered_map>
-#include <type_traits>
-#include <imgui.h>
 #include <any>
-#include <functional>
 #include <fstream>
 
 namespace ge {

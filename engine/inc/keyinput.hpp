@@ -38,6 +38,8 @@ public:
 
     void unsubscribe(subscriber_id_t id);
 
+    void wipe(bool wipe_binds = false);
+
     std::unordered_map<KeyboardKey, std::vector<Subscriber>> subscribers;
 };
 

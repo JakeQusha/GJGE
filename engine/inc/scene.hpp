@@ -22,8 +22,7 @@ class SceneManager {
     entt::registry& registry;
 
 public:
-    SceneManager(entt::registry& registry)
-        : registry(registry) {}
+    SceneManager(entt::registry& registry);
     void make_scene(const char* name, Scene_recipe_t&& setup, Scene_recipe_t&& update) const;
 
     void load_scene(const char* name);

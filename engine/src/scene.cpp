@@ -1,7 +1,8 @@
 #include "scene.hpp"
-
 #include "entity_management.hpp"
 #include "components/relations.hpp"
+
+ge::SceneManager::SceneManager(entt::registry& registry) : registry(registry) {}
 
 void ge::SceneManager::make_scene(const char* name, Scene_recipe_t&& setup, Scene_recipe_t&& update) const {
     auto& asset_manager = registry.ctx().get<AssetManager>();

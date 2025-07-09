@@ -21,9 +21,15 @@ void ge::KeyManager::unsubscribe(subscriber_id_t id) {
         std::erase_if(subs, [id](const auto& sub) { return sub.id == id; });
     }
 }
+void ge::KeyManager::wipe(const bool wipe_binds) {
+    if (wipe_binds) {
+        keys.clear();
+    }
+    subscribers.clear();
+}
 
 auto ge::KeyManager::subscribe(const KeyboardEvent type, const char* key, callback_t&& callback)
-    -> ge::KeyManager::subscriber_id_t {
+    -> subscriber_id_t {
     auto subscriber = make_subscriber(std::move(callback), type);
     const auto id = subscriber.id;
     auto& ak = keys.at(key);
@@ -34,7 +40,7 @@ auto ge::KeyManager::subscribe(const KeyboardEvent type, const char* key, callba
 
 auto ge::KeyManager::get_key(const char* id) const -> KeyboardKey { return keys.at(id).key; }
 
-void ge::KeyManager::assign_key(KeyboardKey key, const char* id) {
+void ge::KeyManager::assign_key(const KeyboardKey key, const char* id) {
     // check if key is already assigned
     if (!keys.contains(id)) {
         keys[id].key = key;

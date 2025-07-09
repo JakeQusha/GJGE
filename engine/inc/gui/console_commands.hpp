@@ -13,6 +13,9 @@ struct echo_command {
     static constexpr auto name = "echo";
     static void execute([[maybe_unused]] const Params& params, [[maybe_unused]] entt::registry& registry,
                         LogCallback add_log) {
+        if (params.size() < 1) {
+            return;
+        }
         add_log(LogLevel::NONE, params.at(0).c_str());
     }
 };

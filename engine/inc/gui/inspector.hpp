@@ -7,6 +7,7 @@
 #include "entity_management.hpp"
 #include <variant>
 #include "logs.hpp"
+#include "scene.hpp"
 #include "template.hpp"
 #include "components/relations.hpp"
 namespace ge {
@@ -54,9 +55,6 @@ struct Inspector {
         if (!is_open) {
             return;
         }
-        if (current_entity && !registry.valid(*current_entity)) {
-            current_entity = std::nullopt;
-        }
         ImGui::SetNextWindowSize(ImVec2(600, 500), ImGuiCond_FirstUseEver);
         if (!ImGui::Begin(name, &is_open, ImGuiWindowFlags_MenuBar)) [[unlikely]] {
             ImGui::End();
@@ -65,7 +63,7 @@ struct Inspector {
         if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("Entity")) {
                 if (ImGui::MenuItem("New Entity")) {
-                    ge::logger.add_log(LogLevel::INFO, "New Entity Created");
+                    logger.add_log(LogLevel::INFO, "New Entity Created");
                     const auto entity = registry.create();
                     registry.emplace<InspectorIntegration>(entity, "New entity");
                 }
@@ -81,7 +79,8 @@ struct Inspector {
 
                 ImGui::EndMenu();
             }
-            if (ImGui::BeginMenu("Components")) {
+            if (ImGui::BeginMenu("Component")) {
+                ImGui::SeparatorText("Filter");
                 auto i = 0u;
                 (
                     [&]() {
@@ -90,7 +89,32 @@ struct Inspector {
                     ...);
                 ImGui::EndMenu();
             }
+            if (ImGui::BeginMenu("Scene")) {
+                if (ImGui::BeginMenu("Load Scene")) {
+                    for (const auto& key : registry.ctx().get<AssetManager>().get_all<Scene>() | std::views::keys) {
+                        if (ImGui::MenuItem(key.c_str())) {
+                            registry.ctx().get<SceneManager>().load_scene(key.c_str());
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::SeparatorText("Danger Zone");
+                if (ImGui::BeginMenu("Force Scene")) {
+                    for (const auto& key : registry.ctx().get<AssetManager>().get_all<Scene>() | std::views::keys) {
+                        if (ImGui::MenuItem(key.c_str())) {
+                            auto& sm = registry.ctx().get<SceneManager>();
+                            sm.unload_scene(true);
+                            sm.load_scene(key.c_str());
+                        }
+                    }
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMenu();
+            }
             ImGui::EndMenuBar();
+        }
+        if (current_entity && !registry.valid(*current_entity)) {
+            current_entity = std::nullopt;
         }
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4.f, 0.)); // Optional: reduce spacing between items
 

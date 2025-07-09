@@ -11,15 +11,14 @@ GJGE ia a Game Dev Toolkit written in C++23. Intended to be used in the future b
 - **Entity Hierarchy**
 - Performant **input system**
 - **Asset Manager**
-- **Collisions** System
+- **Collision** System
 - **Component Dependencies**
 - **Templates** (Prefabs)
 - **2D textures** and **Sprites**
+- **Scene System**
 
 ## In Progress
-- Animator
-- Scenes System
-- Global Options
+- Animations
 
 ## TODO
 - Particles

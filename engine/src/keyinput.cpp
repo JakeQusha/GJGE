@@ -2,6 +2,7 @@
 #include <raylib.h>
 #include "keyinput.hpp"
 
+#include <iostream>
 #include <ranges>
 
 [[nodiscard]] auto ge::KeyManager::make_subscriber(callback_t&& callback, const KeyboardEvent type) -> Subscriber {
@@ -25,7 +26,9 @@ void ge::KeyManager::wipe(const bool wipe_binds) {
     if (wipe_binds) {
         keys.clear();
     }
-    subscribers.clear();
+    for (auto& subs : subscribers | std::views::values) {
+        subs.clear();
+    }
 }
 
 auto ge::KeyManager::subscribe(const KeyboardEvent type, const char* key, callback_t&& callback)
@@ -63,6 +66,7 @@ void ge::KeyManager::assign_key(const KeyboardKey key, const char* id) {
 }
 
 void ge::notify_keyboard_press_system(const KeyManager& manager) {
+    auto a = manager.subscribers.size();
     for (const auto& key_val : manager.subscribers) {
         for (const auto& sub : key_val.second) {
             using ST = KeyboardEvent;

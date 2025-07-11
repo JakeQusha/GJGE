@@ -3,6 +3,7 @@
 #include <raylib.h>
 #include <cstdint>
 
+
 namespace ge {
 struct MultiTexture {
     Texture2D texture;
@@ -38,9 +39,7 @@ struct MultiTexture {
 template <typename... Args>
     requires std::constructible_from<MultiTexture, Texture2D, Args...>
 auto LoadMultiTexture(const char* fileName, Args&&... args) -> MultiTexture {
-    const auto image = LoadImage(fileName);
-    const auto texture = LoadTextureFromImage(image);
-    UnloadImage(image);
+    const auto texture = LoadTexture(fileName);
     return MultiTexture(texture, args...);
 }
 

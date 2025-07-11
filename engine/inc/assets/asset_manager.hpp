@@ -22,7 +22,7 @@ public:
 
     template <typename T>
     [[nodiscard]] auto get_ptr(const std::string& id) -> T* {
-        return std::any_cast<T*>(&assets[typeid(T).name()].at(id));
+        return &std::any_cast<T&>(assets[typeid(T).name()].at(id));
     }
 
     template <typename T>

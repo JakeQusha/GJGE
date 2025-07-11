@@ -2,8 +2,7 @@
 
 #include <raylib.h>
 #include <cstdint>
-
-
+#define ImTxt(texture) (*reinterpret_cast<ImTextureID*>(&texture))
 namespace ge {
 struct MultiTexture {
     Texture2D texture;

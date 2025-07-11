@@ -5,7 +5,7 @@
 
 namespace ge {
 template <typename T, typename... Args>
-void emplace(entt::registry& registry, entt::entity entity, const Args&... args);
+auto emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto);
 
 template <typename... T>
 struct Dependencies {
@@ -30,11 +30,11 @@ void kill(entt::registry& registry, entt::entity entity);
 auto create(entt::registry& registry, const char* name) -> entt::entity;
 
 template <typename T, typename... Args>
-void emplace(entt::registry& registry, entt::entity entity, const Args&... args) {
+auto emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto){
     if constexpr (HasDependencies<T>) {
         T::dependencies.add_all(registry, entity);
     }
-    registry.emplace_or_replace<T>(entity, args...);
+    return registry.emplace_or_replace<T>(entity, args...);
 }
 
 template <typename T>

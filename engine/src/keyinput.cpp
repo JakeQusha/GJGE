@@ -31,7 +31,7 @@ void ge::KeyManager::wipe(const bool wipe_binds) {
     }
 }
 
-auto ge::KeyManager::subscribe(const KeyboardEvent type, const char* key, callback_t&& callback)
+auto ge::KeyManager::subscribe(const KeyboardEvent type, const std::string& key, callback_t&& callback)
     -> subscriber_id_t {
     auto subscriber = make_subscriber(std::move(callback), type);
     const auto id = subscriber.id;
@@ -41,9 +41,9 @@ auto ge::KeyManager::subscribe(const KeyboardEvent type, const char* key, callba
     return id;
 }
 
-auto ge::KeyManager::get_key(const char* id) const -> KeyboardKey { return keys.at(id).key; }
+auto ge::KeyManager::get_key(const std::string& id) const -> KeyboardKey { return keys.at(id).key; }
 
-void ge::KeyManager::assign_key(const KeyboardKey key, const char* id) {
+void ge::KeyManager::assign_key(const KeyboardKey key, const std::string& id) {
     // check if key is already assigned
     if (!keys.contains(id)) {
         keys[id].key = key;
@@ -66,13 +66,12 @@ void ge::KeyManager::assign_key(const KeyboardKey key, const char* id) {
 }
 
 void ge::notify_keyboard_press_system(const KeyManager& manager) {
-    auto a = manager.subscribers.size();
-    for (const auto& key_val : manager.subscribers) {
-        for (const auto& sub : key_val.second) {
+    for (const auto& [fst, snd] : manager.subscribers) {
+        for (const auto& sub : snd) {
             using ST = KeyboardEvent;
-            if ((sub.type == ST::PRESS && IsKeyPressed(key_val.first)) ||
-                (sub.type == ST::RELEASE && IsKeyReleased(key_val.first)) ||
-                (sub.type == ST::UP && IsKeyUp(key_val.first)) || (sub.type == ST::DOWN && IsKeyDown(key_val.first))) {
+            if ((sub.type == ST::PRESS && IsKeyPressed(fst)) ||
+                (sub.type == ST::RELEASE && IsKeyReleased(fst)) ||
+                (sub.type == ST::UP && IsKeyUp(fst)) || (sub.type == ST::DOWN && IsKeyDown(fst))) {
                 sub.callback();
             }
         }

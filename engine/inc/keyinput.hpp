@@ -13,16 +13,16 @@ public:
     using callback_t = std::function<void()>;
     using subscriber_id_t = std::uint32_t;
 
-    void assign_key(KeyboardKey key, const char* id);
+    void assign_key(KeyboardKey key, const std::string& id);
 
-    [[nodiscard]] auto get_key(const char* id) const -> KeyboardKey;
+    [[nodiscard]] auto get_key(const std::string& id) const -> KeyboardKey;
 
 private:
     struct AssignedKey {
         KeyboardKey key;
         std::vector<subscriber_id_t> subscribers;
     };
-    std::unordered_map<const char*, AssignedKey> keys;
+    std::unordered_map<std::string, AssignedKey> keys;
     struct Subscriber {
         KeyboardEvent type;
         callback_t callback;
@@ -34,7 +34,7 @@ private:
 public:
     auto subscribe(KeyboardEvent type, KeyboardKey key, callback_t&& callback) -> subscriber_id_t;
 
-    auto subscribe(KeyboardEvent type, const char* key, callback_t&& callback) -> subscriber_id_t;
+    auto subscribe(KeyboardEvent type, const std::string& key, callback_t&& callback) -> subscriber_id_t;
 
     void unsubscribe(subscriber_id_t id);
 

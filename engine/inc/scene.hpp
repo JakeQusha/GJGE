@@ -10,11 +10,16 @@
 #define SCENE_DEF(name)                                                                                                \
     static void setup(entt::registry&, ge::AssetManager&);                                                             \
     static void update(entt::registry&, ge::AssetManager&);                                                            \
-    void gen_##name##_scene(const ge::SceneManager& scene_manager) { scene_manager.make_scene(#name, setup, update); }
+    static void clean(entt::registry&, ge::AssetManager&);                                                             \
+    void gen_##name##_scene(const ge::SceneManager& scene_manager) {                                                   \
+        scene_manager.make_scene(#name, setup, update, clean);                                                         \
+    }
 #define SETUP                                                                                                          \
     static void setup([[maybe_unused]] entt::registry& registry, [[maybe_unused]] ge::AssetManager& asset_manager)
 #define UPDATE                                                                                                         \
     static void update([[maybe_unused]] entt::registry& registry, [[maybe_unused]] ge::AssetManager& asset_manager)
+#define CLEAN                                                                                                          \
+    static void clean([[maybe_unused]] entt::registry& registry, [[maybe_unused]] ge::AssetManager& asset_manager)
 
 namespace ge {
 namespace comp {
@@ -28,6 +33,7 @@ struct Scene {
     const char* name;
     Scene_recipe_t setup;
     Scene_recipe_t update;
+    Scene_recipe_t clean;
 };
 class SceneManager {
     Scene* current_scene = nullptr;
@@ -35,7 +41,8 @@ class SceneManager {
 
 public:
     SceneManager(entt::registry& registry);
-    void make_scene(const char* name, Scene_recipe_t&& setup, Scene_recipe_t&& update) const;
+
+    void make_scene(const char* name, Scene_recipe_t&& setup, Scene_recipe_t&& update, Scene_recipe_t&& clean) const;
 
     void load_scene(const char* name);
 
@@ -43,7 +50,7 @@ public:
 
     void tick() const;
 
-    const char* get_current_scene() const;
+    [[nodiscard]] auto get_current_scene() const -> const char*;
 };
 
 } // namespace ge

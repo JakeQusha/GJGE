@@ -14,12 +14,18 @@ void generate_scenes(const ge::SceneManager& scene_manager) {
         },
         [](entt::registry&, ge::AssetManager&) {
 
+        },
+        [](entt::registry&, ge::AssetManager&) {
+
         });
     scene_manager.make_scene(
         "second",
         [](entt::registry& registry, ge::AssetManager& asset_manager) {
             ge::instantiate_template(registry, "stary");
             ge::instantiate_template(registry, "stary");
+        },
+        [](entt::registry&, ge::AssetManager&) {
+
         },
         [](entt::registry&, ge::AssetManager&) {
 

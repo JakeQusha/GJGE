@@ -50,6 +50,7 @@ void ge::KeyManager::assign_key(const KeyboardKey key, const std::string& id) {
         return;
     }
     const auto old_key = keys.at(id).key;
+    keys[id].key = key;
     for (auto& sub : keys.at(id).subscribers) {
         for (size_t i = 0; i < subscribers[old_key].size(); ++i) {
             if (subscribers[old_key][i].id == sub) {

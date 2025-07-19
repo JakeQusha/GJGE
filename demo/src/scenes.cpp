@@ -9,7 +9,7 @@ void generate_scenes(const ge::SceneManager& scene_manager) {
             auto entity = ge::create(registry, "wojtek");
             registry.emplace<Dead>(entity);
             registry.emplace<Alive>(entity);
-            entity = ge::create(registry,"static");
+            entity = ge::create(registry, "static");
             registry.emplace<ge::comp::PersistentEntity>(entity);
         },
         [](entt::registry&, ge::AssetManager&) {

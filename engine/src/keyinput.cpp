@@ -87,8 +87,8 @@ void ge::KeyManager::assign_key(const KeyboardKey key, const std::string& id) {
 }
 void ge::KeyManager::disable_group(const std::string& group) { disabled_groups.insert(group); }
 void ge::KeyManager::enable_group(const std::string& group) { disabled_groups.erase(group); }
-[[nodiscard]] bool ge::KeyManager::is_disabled(const ge::KeyManager::subscriber_id_t id) const {
-    return disabled_groups.contains(id_to_group.at(id));
+[[nodiscard]] bool ge::KeyManager::is_disabled(const subscriber_id_t id) const {
+    return id_to_group.contains(id) && disabled_groups.contains(id_to_group.at(id));
 }
 
 void ge::notify_keyboard_press_system(const KeyManager& manager) {

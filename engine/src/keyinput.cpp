@@ -8,15 +8,14 @@
     return Subscriber{.type = type, .callback = std::move(callback), .id = id++};
 }
 
-auto ge::KeyManager::subscribe(KeyboardEvent type, KeyboardKey key, callback_t&& callback) -> subscriber_id_t {
+auto ge::KeyManager::subscribe(const KeyboardEvent type, const KeyboardKey key, callback_t&& callback) -> subscriber_id_t {
     auto subscriber = make_subscriber(std::move(callback), type);
     const auto id = subscriber.id;
     subscribers[key].push_back(std::move(subscriber));
     return id;
 }
-auto ge::KeyManager::subscribe(ge::KeyboardEvent type, const std::string& key, const std::string& group,
-                               ge::KeyManager::callback_t&& callback) -> ge::KeyManager::subscriber_id_t {
-    auto id = subscribe(type, key, std::forward<decltype(callback)>(callback));
+auto ge::KeyManager::subscribe(const KeyboardEvent type, const std::string& key, const std::string& group, callback_t&& callback) -> subscriber_id_t {
+    const auto id = subscribe(type, key, std::forward<decltype(callback)>(callback));
     groups[group].insert(id);
     id_to_group[id] = group;
     return id;
@@ -52,8 +51,7 @@ void ge::KeyManager::wipe_group(const std::string& group) {
     groups.at(group).clear();
 }
 
-auto ge::KeyManager::subscribe(const KeyboardEvent type, const std::string& key, callback_t&& callback)
-    -> subscriber_id_t {
+auto ge::KeyManager::subscribe(const KeyboardEvent type, const std::string& key, callback_t&& callback) -> subscriber_id_t {
     auto subscriber = make_subscriber(std::move(callback), type);
     const auto id = subscriber.id;
     auto& ak = keys.at(key);
@@ -72,7 +70,7 @@ void ge::KeyManager::assign_key(const KeyboardKey key, const std::string& id) {
     }
     const auto old_key = keys.at(id).key;
     keys[id].key = key;
-    for (auto& sub : keys.at(id).subscribers) {
+    for (const auto sub : keys.at(id).subscribers) {
         for (size_t i = 0; i < subscribers[old_key].size(); ++i) {
             if (subscribers[old_key][i].id == sub) {
                 auto callback = std::move(subscribers[old_key][i].callback);
@@ -87,7 +85,7 @@ void ge::KeyManager::assign_key(const KeyboardKey key, const std::string& id) {
 }
 void ge::KeyManager::disable_group(const std::string& group) { disabled_groups.insert(group); }
 void ge::KeyManager::enable_group(const std::string& group) { disabled_groups.erase(group); }
-[[nodiscard]] bool ge::KeyManager::is_disabled(const subscriber_id_t id) const {
+[[nodiscard]] auto ge::KeyManager::is_disabled(const subscriber_id_t id) const -> bool {
     return id_to_group.contains(id) && disabled_groups.contains(id_to_group.at(id));
 }
 
@@ -98,8 +96,8 @@ void ge::notify_keyboard_press_system(const KeyManager& manager) {
                 continue;
             }
             using ST = KeyboardEvent;
-            if ((sub.type == ST::PRESS && IsKeyPressed(fst)) || (sub.type == ST::RELEASE && IsKeyReleased(fst)) ||
-                (sub.type == ST::UP && IsKeyUp(fst)) || (sub.type == ST::DOWN && IsKeyDown(fst))) {
+            if ((sub.type == ST::PRESS && IsKeyPressed(fst)) || (sub.type == ST::RELEASE && IsKeyReleased(fst)) || (sub.type == ST::UP && IsKeyUp(fst)) ||
+                (sub.type == ST::DOWN && IsKeyDown(fst))) {
                 sub.callback();
             }
         }

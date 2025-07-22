@@ -10,8 +10,8 @@ void ge::kill(entt::registry& registry, entt::entity entity) {
 }
 
 auto ge::create(entt::registry& registry, const char* name) -> entt::entity {
-    auto entity = registry.create();
-    registry.emplace<ge::InspectorIntegration>(entity, name);
-    registry.emplace<ge::comp::Transform2D>(entity);
+    const auto entity = registry.create();
+    registry.emplace<InspectorIntegration>(entity, name);
+    registry.emplace<comp::Transform2D>(entity);
     return entity;
 }

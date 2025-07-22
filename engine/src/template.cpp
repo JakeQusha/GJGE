@@ -7,8 +7,8 @@ void ge::make_template(entt::registry& registry, const char* name, Recipe_t&& re
 
 auto ge::instantiate_template(entt::registry& registry, const char* name) -> entt::entity {
     auto& asset_manager = registry.ctx().get<AssetManager>();
-    auto& _template = asset_manager.get<Template>(name);
-    auto entity = create(registry, _template.name);
+    const auto& _template = asset_manager.get<Template>(name);
+    const auto entity = create(registry, _template.name);
     _template.recipe(registry, asset_manager, entity);
     return entity;
 }

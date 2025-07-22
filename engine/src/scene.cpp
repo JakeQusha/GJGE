@@ -33,7 +33,7 @@ void ge::SceneManager::tick() const {
         current_scene->update(registry, registry.ctx().get<AssetManager>());
     }
 }
-const char* ge::SceneManager::get_current_scene() const {
+auto ge::SceneManager::get_current_scene() const -> const char* {
     if (current_scene == nullptr) {
         return "None";
     }

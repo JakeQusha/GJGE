@@ -23,5 +23,7 @@ struct Template {
 
 void make_template(entt::registry& registry, const char* name, Recipe_t&& recipe);
 
-auto instantiate_template(entt::registry& registry, const char* name) -> entt::entity;
+auto instantiate(entt::registry& registry, const char* template_name) -> entt::entity;
+
+auto instantiate_child(entt::registry& registry,entt::entity parent,const char* template_name) -> entt::entity;
 } // namespace ge

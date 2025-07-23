@@ -24,7 +24,7 @@ void ge::SceneManager::unload_scene(const bool destroy_persistent_entities) {
             registry.all_of<comp::Child>(entity)) {
             continue;
         }
-        kill(registry, entity);
+        kill_unsafe(registry, entity);
     }
     current_scene = nullptr;
 }

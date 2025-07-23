@@ -10,7 +10,8 @@ namespace comp {
 struct AABBCollider {
     static constexpr Dependencies<Transform2D> dependencies{};
     static constexpr auto name = "AABBCollider";
-    bool logical_only{false};
+    bool trigger_only = false;
+    bool static_body = true;
     Vector2 offset{.5, .5};
     Vector2 size{50, 50};
     std::optional<std::function<void(entt::registry&, entt::entity, entt::entity)>> on_collision_callback;

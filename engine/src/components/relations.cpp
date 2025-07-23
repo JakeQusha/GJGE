@@ -50,7 +50,7 @@ void ge::relations_call_on_delete_entity(entt::registry& registry, entt::entity 
                 continue;
             }
             registry.remove<comp::Child>(child);
-            kill(registry, child);
+            kill_unsafe(registry, child);
         }
     }
     if (registry.all_of<comp::Child>(entity)) {

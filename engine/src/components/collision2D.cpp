@@ -36,7 +36,7 @@ static void process_AABBCollision(entt::registry& registry, entt::entity first, 
         if (second_collider.on_collision_callback) {
             (*second_collider.on_collision_callback)(registry, second, first);
         }
-        if (first_collider.logical_only || second_collider.logical_only) {
+        if (first_collider.trigger_only || second_collider.trigger_only) {
             return;
         }
         /*TODO PHYSIC STUFF*/
@@ -59,5 +59,5 @@ void ge::evaluate_AABB_Collisions(entt::registry& registry) {
 void ge::comp::AABBCollider::inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {
     ImGui::DragFloat2("Offset:", &offset.x, 0.01f);
     ImGui::DragFloat2("Size:", &size.x, 1, 0);
-    ImGui::Checkbox("Logical Only", &logical_only);
+    ImGui::Checkbox("Trigger Only", &trigger_only);
 }

@@ -21,8 +21,8 @@ void generate_scenes(const ge::SceneManager& scene_manager) {
     scene_manager.make_scene(
         "second",
         [](entt::registry& registry, ge::AssetManager& asset_manager) {
-            ge::instantiate_template(registry, "stary");
-            ge::instantiate_template(registry, "stary");
+            ge::instantiate(registry, "stary");
+            ge::instantiate(registry, "stary");
         },
         [](entt::registry&, ge::AssetManager&) {
 

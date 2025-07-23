@@ -71,7 +71,7 @@ struct Inspector {
                 if (ImGui::BeginMenu("New Entity From Template")) {
                     for (const auto& key : registry.ctx().get<AssetManager>().get_all<Template>() | std::views::keys) {
                         if (ImGui::MenuItem(key.c_str())) {
-                            instantiate_template(registry, key.c_str());
+                            instantiate(registry, key.c_str());
                         }
                     }
                     ImGui::EndMenu();
@@ -371,7 +371,7 @@ private:
         }
         ImGui::SetCursorPosX(10);
         if (ImGui::Button("Delete")) {
-            ge::kill(registry, entity);
+            ge::kill_unsafe(registry, entity);
             current_entity = std::nullopt;
             ImGui::PopStyleVar();
             ImGui::EndChild();

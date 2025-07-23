@@ -1,14 +1,25 @@
 #include "entity_management.hpp"
 #include "components/transform2D.hpp"
 #include "gui/inspector.hpp"
-void ge::kill(entt::registry& registry, entt::entity entity) {
+
+static std::queue<entt::entity> kill_queue;
+
+void ge::kill_unsafe(entt::registry& registry, entt::entity entity) {
     if (!registry.valid(entity)) {
         return;
     }
     relations_call_on_delete_entity(registry, entity);
     registry.destroy(entity);
 }
-
+void ge::empty_kill_queue(entt::registry& registry) {
+    while (!kill_queue.empty()) {
+        kill_unsafe(registry,kill_queue.front());
+        kill_queue.pop();
+    }
+}
+void ge::kill(const entt::entity entity) {
+    kill_queue.push(entity);
+}
 auto ge::create(entt::registry& registry, const char* name) -> entt::entity {
     const auto entity = registry.create();
     registry.emplace<InspectorIntegration>(entity, name);

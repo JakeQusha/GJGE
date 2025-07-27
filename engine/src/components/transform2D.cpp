@@ -49,7 +49,7 @@ next:
 void ge::calculate_global_transform(entt::registry& registry) {
     auto view = registry.view<comp::Transform2D>();
     for (auto&& [entity, transform] : view.each()) {
-        if (registry.all_of<ge::comp::Child>(entity)) {
+        if (registry.all_of<comp::Child>(entity)) {
             continue;
         }
         calculate_transform(registry, entity, transform, entt::null, false);

@@ -28,9 +28,6 @@ static void process_AABBCollision(entt::registry& registry, entt::entity first, 
         if (second_collider.on_collision_callback) {
             (*second_collider.on_collision_callback)(registry, second, first);
         }
-        //DEBUG
-        // auto intersection = second_collider.get_intersection(second_transform,first_collider,first_transform);
-        // DrawLineV(second_collider.get_center(second_transform),second_collider.get_center(second_transform) - intersection, ORANGE);
     }
 
 }
@@ -60,13 +57,13 @@ auto ge::comp::AABBCollider::get_intersection(const Transform2D& transform, cons
     const auto first_size = get_size(transform);
     const auto second_corner = other.get_corner(other_transform);
     const auto second_size = other.get_size(other_transform);
-    float x = std::min(first_corner.x, second_corner.x) + (first_corner.x < second_corner.x ? first_size.x : second_size.x) -
+    auto x = std::min(first_corner.x, second_corner.x) + (first_corner.x < second_corner.x ? first_size.x : second_size.x) -
               std::max(first_corner.x, second_corner.x);
-    float y = std::min(first_corner.y, second_corner.y) + (first_corner.y < second_corner.y ? first_size.y : second_size.y) -
+    auto y = std::min(first_corner.y, second_corner.y) + (first_corner.y < second_corner.y ? first_size.y : second_size.y) -
               std::max(first_corner.y, second_corner.y);
     x = (x < first_size.x ? x : 0.f);
     y = (y < first_size.y ? y : 0.f);
-    return {first_corner.x > second_corner.x ? x : -x, first_corner.y > second_corner.y ? y : -y};
+    return {first_corner.x + first_size.x /2 > second_corner.x + second_size.x /2 ? x : -x, first_corner.y + first_size.y /2 > second_corner.y + first_size.x /2 ? y : -y};
 }
 
 void ge::comp::AABBCollider::inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {

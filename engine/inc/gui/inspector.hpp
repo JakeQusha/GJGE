@@ -63,7 +63,7 @@ struct Inspector {
         if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("Entity")) {
                 if (ImGui::MenuItem("New Entity")) {
-                    logger.add_log(LogLevel::INFO, "New Entity Created");
+                    logger.log(LogLevel::INFO, "New Entity Created");
                     const auto entity = registry.create();
                     registry.emplace<InspectorIntegration>(entity, "New entity");
                 }
@@ -167,7 +167,7 @@ private:
 
             if (ImGui::BeginPopupContextWindow()) {
                 if (ImGui::MenuItem("Create new entity")) {
-                    logger.add_log(LogLevel::INFO, "New Entity Created");
+                    logger.log(LogLevel::INFO, "New Entity Created");
                     const auto entity = registry.create();
                     registry.emplace<InspectorIntegration>(entity, "New entity");
                 }
@@ -217,7 +217,7 @@ private:
                 [&](auto&& arg) {
                     using T = std::decay_t<decltype(arg)>;
                     if constexpr (std::is_same_v<T, std::monostate>) {
-                        logger.add_log(LogLevel::ERR, "No component selected");
+                        logger.log(LogLevel::ERR, "No component selected");
                         return;
                     }
                     emplace<T>(registry, entity, std::forward<decltype(arg)>(arg));
@@ -357,7 +357,7 @@ private:
         ImGui::SeparatorText("Options");
         if (ImGui::BeginPopup("Rename")) {
             if (ImGui::InputText("##", temp_name, sizeof temp_name, ImGuiInputTextFlags_EnterReturnsTrue)) {
-                logger.add_log(LogLevel::DEBUG,
+                logger.log(LogLevel::DEBUG,
                                std::format(R"(Renamed "{}" to "{}")", ii.debug_name, temp_name).c_str());
                 ii.debug_name.assign(temp_name);
                 ImGui::CloseCurrentPopup();

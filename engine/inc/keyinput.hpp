@@ -24,7 +24,7 @@ private:
     };
     std::unordered_map<std::string, AssignedKey> keys;
     std::unordered_map<std::string, std::set<subscriber_id_t>> groups;
-    std::unordered_map<subscriber_id_t,std::string> id_to_group;
+    std::unordered_map<subscriber_id_t, std::string> id_to_group;
     struct Subscriber {
         KeyboardEvent type;
         callback_t callback;
@@ -34,7 +34,7 @@ private:
     [[nodiscard]] static auto make_subscriber(callback_t&& callback, KeyboardEvent type) -> Subscriber;
 
 public:
-    auto subscribe(KeyboardEvent type, KeyboardKey key, callback_t&& callback) -> subscriber_id_t;
+    [[deprecated]] auto subscribe(KeyboardEvent type, KeyboardKey key, callback_t&& callback) -> subscriber_id_t;
 
     auto subscribe(KeyboardEvent type, const std::string& key, callback_t&& callback) -> subscriber_id_t;
     auto subscribe(KeyboardEvent type, const std::string& key, const std::string& group, callback_t&& callback) -> subscriber_id_t;
@@ -44,7 +44,7 @@ public:
     void wipe_group(const std::string& group);
     void disable_group(const std::string& group);
     void enable_group(const std::string& group);
-    [[nodiscard]] bool is_disabled(subscriber_id_t id) const;
+    [[nodiscard]] auto is_disabled(subscriber_id_t id) const -> bool;
     std::unordered_map<KeyboardKey, std::vector<Subscriber>> subscribers;
     std::set<std::string> disabled_groups;
 };

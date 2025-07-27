@@ -46,7 +46,7 @@ struct Log {
 
 struct Logger {
     std::queue<Log> logs;
-    void add_log(LogLevel ll, const char* message) { logs.emplace(ll, message, false); }
+    void log(LogLevel ll, const char* message) { logs.emplace(ll, message, false); }
 };
 inline Logger logger;
 } // namespace ge

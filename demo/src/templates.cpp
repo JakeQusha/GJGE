@@ -21,7 +21,7 @@ void generate_templates(entt::registry& registry) {
             auto& col = registry.emplace<ge::comp::AABBCollider>(entity);
             col.on_collision_callback = []([[maybe_unused]] entt::registry& reg, entt::entity main,
                                            entt::entity other) {
-                ge::logger.add_log(ge::LogLevel::DEBUG, std::format("{} tycniety by {}", static_cast<uint32_t>(main),
+                ge::logger.log(ge::LogLevel::DEBUG, std::format("{} tycniety by {}", static_cast<uint32_t>(main),
                                                                     static_cast<uint32_t>(other))
                                                             .c_str());
             };

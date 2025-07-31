@@ -13,7 +13,7 @@ void ge::draw_sprites(entt::registry& registry) {
         auto width = std::abs(rect.width) * std::abs(transform.global_scale.x);
         auto height = std::abs(rect.height) * std::abs(transform.global_scale.y);
         DrawTexturePro(
-            txt.texture, rect, Rectangle{std::floor(transform.global_position.x), std::floor(transform.global_position.y), width, height},
+            txt.texture, rect, Rectangle{std::round(transform.global_position.x), std::round(transform.global_position.y), width, height},
             Vector2Multiply(sprite.offset, Vector2(width, height)), RAD2DEG * transform.global_rotation, sprite.tint);
     }
 }

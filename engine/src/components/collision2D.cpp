@@ -63,7 +63,7 @@ auto ge::comp::AABBCollider::get_intersection(const Transform2D& transform, cons
               std::max(first_corner.y, second_corner.y);
     x = (x < first_size.x ? x : 0.f);
     y = (y < first_size.y ? y : 0.f);
-    return {first_corner.x + first_size.x /2 > second_corner.x + second_size.x /2 ? x : -x, first_corner.y + first_size.y /2 > second_corner.y + first_size.x /2 ? y : -y};
+    return {first_corner.x + first_size.x /2 > second_corner.x + second_size.x /2 ? x : -x, first_corner.y + first_size.y /2 > second_corner.y + second_size.y /2 ? y : -y};
 }
 
 void ge::comp::AABBCollider::inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {

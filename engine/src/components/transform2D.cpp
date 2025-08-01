@@ -21,7 +21,7 @@ static void calculate_transform(entt::registry& registry, entt::entity entity, g
     }
     force = true;
     if (parent == entt::null) {
-        transform.global_position = transform.position;
+        transform._last_position = transform.global_position = transform.position;
         transform.global_rotation = transform.rotation;
         transform.global_scale = transform.scale;
         goto next;

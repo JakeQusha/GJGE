@@ -26,3 +26,8 @@ auto ge::create(entt::registry& registry, const char* name) -> entt::entity {
     registry.emplace<comp::Transform2D>(entity);
     return entity;
 }
+auto ge::create_child(entt::registry& registry, entt::entity parent, const char* name) -> entt::entity {
+    const auto entity = create(registry, name);
+    add_relation(registry, parent, entity);
+    return entity;
+}

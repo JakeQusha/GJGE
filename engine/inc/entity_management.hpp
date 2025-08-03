@@ -29,7 +29,7 @@ void kill(entt::entity entity);
 void kill_unsafe(entt::registry& registry, entt::entity entity);
 void empty_kill_queue(entt::registry& registry);
 auto create(entt::registry& registry, const char* name) -> entt::entity;
-
+auto create_child(entt::registry& registry,entt::entity parent, const char* name) -> entt::entity;
 template <typename T, typename... Args>
 auto emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto){
     if constexpr (HasDependencies<T>) {

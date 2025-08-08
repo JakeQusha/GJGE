@@ -18,13 +18,8 @@ struct Sprite {
     uint16_t id = 0;
     Vector2 offset{0.5f, 0.5f};
     Color tint = WHITE;
-
-    void inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {
-        auto& am = registry.ctx().get<AssetManager>();
-        display_asset_manager_picker<MultiTexture>("Texture", texture, am);
-        ImGui::DragFloat2("Offset", &offset.x, 0.01f);
-        ImGui::DragScalar("Sprite id", ImGuiDataType_U16, &id, 1.0f);
-    }
+    int8_t layer = 0;
+    void inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity);
 };
 } // namespace comp
 

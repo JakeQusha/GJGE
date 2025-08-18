@@ -15,7 +15,7 @@ void ge::draw_sprites(entt::registry& registry) {
         if (!sprite.texture) {
             continue;
         }
-        auto& txt = sprite.texture.value();
+        const auto& txt = sprite.texture.value();
         auto rect = txt.rect_multi(sprite.id);
         rect.width *= transform.global_scale.x < 0 ? -1 : 1;
         rect.height *= transform.global_scale.y < 0 ? -1 : 1;

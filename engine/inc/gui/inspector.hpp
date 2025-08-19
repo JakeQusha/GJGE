@@ -12,7 +12,8 @@
 #include "components/relations.hpp"
 namespace ge {
 struct InspectorIntegration {
-    std::string debug_name;
+    std::string debug_name{};
+    const char* _template = nullptr;
 };
 
 template <typename T>
@@ -120,8 +121,7 @@ struct Inspector {
 
         // Split main window horizontally
 
-        ImGui::BeginChild("Entity List", ImVec2{220, 0},
-                          ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX | ImGuiChildFlags_NavFlattened);
+        ImGui::BeginChild("Entity List", ImVec2{220, 0}, ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX | ImGuiChildFlags_NavFlattened);
         display_entity_list();
         ImGui::EndChild();
 
@@ -152,8 +152,7 @@ private:
     void display_entity_list() {
         ImGui::SetNextItemWidth(-FLT_MIN);
         ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F, ImGuiInputFlags_Tooltip);
-        if (ImGui::InputTextWithHint("##", "Search", filter_list.InputBuf, sizeof filter_list.InputBuf,
-                                     ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputTextWithHint("##", "Search", filter_list.InputBuf, sizeof filter_list.InputBuf, ImGuiInputTextFlags_EscapeClearsAll)) {
             filter_list.Build();
         }
         ImGui::SeparatorText("Entity List");
@@ -255,8 +254,7 @@ private:
         ImGui::PushID(static_cast<int>(entity));
         ImGui::TableNextRow();
         ImGui::TableNextColumn();
-        ImGuiTreeNodeFlags tree_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick |
-                                        ImGuiTreeNodeFlags_NavLeftJumpsBackHere;
+        ImGuiTreeNodeFlags tree_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_NavLeftJumpsBackHere;
         if (entity == current_entity) {
             tree_flags |= ImGuiTreeNodeFlags_Selected;
         }
@@ -337,8 +335,8 @@ private:
 
     void display_entity_info() { // NOLINT
         entt::entity entity = *current_entity;
-        ImGui::BeginChild("Entity Inspector", ImVec2(0, (is_creator_open ? (ImGui::GetWindowHeight() * .7f) : 0)),
-                          ImGuiChildFlags_Border, ImGuiWindowFlags_None);
+        ImGui::BeginChild("Entity Inspector", ImVec2(0, (is_creator_open ? (ImGui::GetWindowHeight() * .7f) : 0)), ImGuiChildFlags_Border,
+                          ImGuiWindowFlags_None);
         ImGui::BeginGroup();
 
         ImGui::BeginChild("data", ImVec2(-70, 75), ImGuiChildFlags_None, ImGuiWindowFlags_None);
@@ -346,7 +344,7 @@ private:
         ImGui::Text("Entity: %d", static_cast<uint32_t>(entity));
         auto& ii = registry.get<InspectorIntegration>(entity);
         ImGui::Text("Name: %s", ii.debug_name.c_str());
-        ImGui::Text("Template: None");
+        ImGui::Text("Template: %s", ii._template != nullptr ? ii._template : "None");
         ImGui::EndChild();
 
         ImGui::SameLine();
@@ -357,8 +355,7 @@ private:
         ImGui::SeparatorText("Options");
         if (ImGui::BeginPopup("Rename")) {
             if (ImGui::InputText("##", temp_name, sizeof temp_name, ImGuiInputTextFlags_EnterReturnsTrue)) {
-                logger.log(LogLevel::DEBUG,
-                               std::format(R"(Renamed "{}" to "{}")", ii.debug_name, temp_name).c_str());
+                logger.log(LogLevel::DEBUG, std::format(R"(Renamed "{}" to "{}")", ii.debug_name, temp_name).c_str());
                 ii.debug_name.assign(temp_name);
                 ImGui::CloseCurrentPopup();
             }
@@ -384,9 +381,8 @@ private:
         ImGui::EndGroup();
         ImGui::SeparatorText("Components");
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4.f, 5.f));
-        if (ImGui::BeginChild("List comp",
-                              ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - ImGui::GetStyle().ItemSpacing.y),
-                              ImGuiChildFlags_None, ImGuiWindowFlags_None)) {
+        if (ImGui::BeginChild("List comp", ImVec2(0, -ImGui::GetFrameHeightWithSpacing() - ImGui::GetStyle().ItemSpacing.y), ImGuiChildFlags_None,
+                              ImGuiWindowFlags_None)) {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.f, 0.));
             iterate_components([&]<InspectableComponent Comp>() {
                 if (!registry.all_of<Comp>(entity) || !filter_comp.PassFilter(Comp::name)) {
@@ -422,8 +418,7 @@ private:
         ImGui::Separator();
         ImGui::BeginChild("Component data", ImVec2(-120, 0), ImGuiWindowFlags_None);
         ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F, ImGuiInputFlags_Tooltip);
-        if (ImGui::InputTextWithHint("##", "Search", filter_comp.InputBuf, sizeof filter_comp.InputBuf,
-                                     ImGuiInputTextFlags_EscapeClearsAll)) {
+        if (ImGui::InputTextWithHint("##", "Search", filter_comp.InputBuf, sizeof filter_comp.InputBuf, ImGuiInputTextFlags_EscapeClearsAll)) {
             filter_comp.Build();
         }
         ImGui::EndChild();

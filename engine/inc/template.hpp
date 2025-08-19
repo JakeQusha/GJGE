@@ -4,15 +4,13 @@
 #include "entt.hpp"
 #include "assets/asset_manager.hpp"
 #define GENERATE_TEMPLATES(name) inline void name(entt::registry& registry)
-#define TEMPLATE(name)                                                                                                 \
-    extern void gen_##name##_template(entt::registry&);                                                                \
+#define TEMPLATE(name)                                                                                                                                         \
+    extern void gen_##name##_template(entt::registry&);                                                                                                        \
     gen_##name##_template(registry);
-#define TEMPLATE_DEF(name)                                                                                             \
-    static void recipe_##name(entt::registry& registry, [[maybe_unused]] ge::AssetManager& asset_manager,              \
-                              entt::entity entity);                                                                    \
-    void gen_##name##_template(entt::registry& registry) { ge::make_template(registry, #name, recipe_##name); }        \
-    static void recipe_##name(entt::registry& registry, [[maybe_unused]] ge::AssetManager& asset_manager,              \
-                              entt::entity entity)
+#define TEMPLATE_DEF(name)                                                                                                                                     \
+    static void recipe_##name(entt::registry& registry, [[maybe_unused]] ge::AssetManager& asset_manager, entt::entity entity);                                \
+    void gen_##name##_template(entt::registry& registry) { ge::make_template(registry, #name, recipe_##name); }                                                \
+    static void recipe_##name(entt::registry& registry, [[maybe_unused]] ge::AssetManager& asset_manager, entt::entity entity)
 
 namespace ge {
 using Recipe_t = std::function<void(entt::registry&, AssetManager&, entt::entity)>;
@@ -23,7 +21,7 @@ struct Template {
 
 void make_template(entt::registry& registry, const char* name, Recipe_t&& recipe);
 
-auto instantiate(entt::registry& registry, const char* template_name) -> entt::entity;
+auto instantiate(entt::registry& registry, const char* template_name, const char* name = nullptr) -> entt::entity;
 
-auto instantiate_child(entt::registry& registry,entt::entity parent,const char* template_name) -> entt::entity;
+auto instantiate_child(entt::registry& registry, entt::entity parent, const char* template_name, const char* name = nullptr) -> entt::entity;
 } // namespace ge

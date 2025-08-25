@@ -1,43 +1,52 @@
 #pragma once
-
 #include <functional>
 #include <vector>
 #include <cstdint>
 #include <entt.hpp>
-
 namespace ge {
-enum class KeyboardEvent : uint8_t { PRESS, RELEASE, UP, DOWN };
+enum class InputEvent : uint8_t { PRESS, RELEASE, UP, DOWN };
+enum class InputType : uint8_t { KEYBOARD, MOUSE };
+struct Input {
+    InputType type;
+    union {
+        KeyboardKey key;
+        MouseButton button;
+    };
+    static auto keyboard(const KeyboardKey key) -> Input;
+    static auto mouse(const MouseButton button) -> Input;
+    bool operator==(const Input& i) const;
+    bool operator<(const Input& i) const;
+};
+
 
 class KeyManager {
 public:
     using callback_t = std::function<void()>;
     using subscriber_id_t = std::uint32_t;
 
-    void assign_key(KeyboardKey key, const std::string& id);
+    void assign_key(Input input, const std::string& id);
 
-    [[nodiscard]] auto get_key(const std::string& id) const -> KeyboardKey;
+    [[nodiscard]] auto get_key(const std::string& id) const -> Input;
 
 private:
     struct AssignedKey {
-        KeyboardKey key;
+        Input input;
         std::vector<subscriber_id_t> subscribers;
     };
     std::unordered_map<std::string, AssignedKey> keys;
     std::unordered_map<std::string, std::set<subscriber_id_t>> groups;
     std::unordered_map<subscriber_id_t, std::string> id_to_group;
     struct Subscriber {
-        KeyboardEvent type;
+        InputEvent type;
         callback_t callback;
         subscriber_id_t id;
     };
 
-    [[nodiscard]] static auto make_subscriber(callback_t&& callback, KeyboardEvent type) -> Subscriber;
+    [[nodiscard]] static auto make_subscriber(callback_t&& callback, InputEvent type) -> Subscriber;
 
 public:
-    [[deprecated]] auto subscribe(KeyboardEvent type, KeyboardKey key, callback_t&& callback) -> subscriber_id_t;
-
-    auto subscribe(KeyboardEvent type, const std::string& key, callback_t&& callback) -> subscriber_id_t;
-    auto subscribe(KeyboardEvent type, const std::string& key, const std::string& group, callback_t&& callback) -> subscriber_id_t;
+    auto subscribe(InputEvent type, const std::string& key, callback_t&& callback) -> subscriber_id_t;
+    auto subscribe(InputEvent type, const std::string& key, const std::string& group, callback_t&& callback) -> subscriber_id_t;
     void unsubscribe(subscriber_id_t id);
 
     void wipe(bool wipe_binds = false);
@@ -45,7 +54,7 @@ public:
     void disable_group(const std::string& group);
     void enable_group(const std::string& group);
     [[nodiscard]] auto is_disabled(subscriber_id_t id) const -> bool;
-    std::unordered_map<KeyboardKey, std::vector<Subscriber>> subscribers;
+    std::map<Input, std::vector<Subscriber>> subscribers{};
     std::set<std::string> disabled_groups;
 };
 

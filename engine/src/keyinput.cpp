@@ -3,18 +3,18 @@
 #include "keyinput.hpp"
 #include <ranges>
 
-[[nodiscard]] auto ge::KeyManager::make_subscriber(callback_t&& callback, const KeyboardEvent type) -> Subscriber {
+[[nodiscard]] auto ge::KeyManager::make_subscriber(callback_t&& callback, const InputEvent type) -> Subscriber {
     static subscriber_id_t id = 0;
     return Subscriber{.type = type, .callback = std::move(callback), .id = id++};
 }
 
-auto ge::KeyManager::subscribe(const KeyboardEvent type, const KeyboardKey key, callback_t&& callback) -> subscriber_id_t {
-    auto subscriber = make_subscriber(std::move(callback), type);
-    const auto id = subscriber.id;
-    subscribers[key].push_back(std::move(subscriber));
-    return id;
-}
-auto ge::KeyManager::subscribe(const KeyboardEvent type, const std::string& key, const std::string& group, callback_t&& callback) -> subscriber_id_t {
+// auto ge::KeyManager::subscribe(const KeyboardEvent type, const KeyboardKey key, callback_t&& callback) -> subscriber_id_t {
+//     auto subscriber = make_subscriber(std::move(callback), type);
+//     const auto id = subscriber.id;
+//     subscribers[key].push_back(std::move(subscriber));
+//     return id;
+// }
+auto ge::KeyManager::subscribe(const InputEvent type, const std::string& key, const std::string& group, callback_t&& callback) -> subscriber_id_t {
     const auto id = subscribe(type, key, std::forward<decltype(callback)>(callback));
     groups[group].insert(id);
     id_to_group[id] = group;
@@ -51,25 +51,53 @@ void ge::KeyManager::wipe_group(const std::string& group) {
     groups.at(group).clear();
 }
 
-auto ge::KeyManager::subscribe(const KeyboardEvent type, const std::string& key, callback_t&& callback) -> subscriber_id_t {
+auto ge::KeyManager::subscribe(const InputEvent type, const std::string& key, callback_t&& callback) -> subscriber_id_t {
     auto subscriber = make_subscriber(std::move(callback), type);
     const auto id = subscriber.id;
     auto& ak = keys.at(key);
-    subscribers[ak.key].push_back(std::move(subscriber));
+    subscribers[ak.input].push_back(std::move(subscriber));
     ak.subscribers.push_back(id);
     return id;
 }
 
-auto ge::KeyManager::get_key(const std::string& id) const -> KeyboardKey { return keys.at(id).key; }
+auto ge::KeyManager::get_key(const std::string& id) const -> Input { return keys.at(id).input; }
 
-void ge::KeyManager::assign_key(const KeyboardKey key, const std::string& id) {
+auto ge::Input::keyboard(const KeyboardKey key) -> Input { return Input{.type = InputType::KEYBOARD, .key = key}; }
+auto ge::Input::mouse(const MouseButton button) -> Input { return Input{.type = InputType::MOUSE, .button = button}; }
+bool ge::Input::operator==(const Input& i) const {
+    if (type != i.type) {
+        return false;
+    }
+    switch (type) {
+    case InputType::KEYBOARD:
+        return key == i.key;
+    case InputType::MOUSE:
+        return button == i.button;
+    default:
+        return false;
+    }
+}
+bool ge::Input::operator<(const Input& i) const {
+    if (type != i.type) {
+        return type < i.type;
+    }
+    switch (type) {
+    case InputType::KEYBOARD:
+        return key < i.key;
+    case InputType::MOUSE:
+        return button < i.button;
+    default:
+        return false;
+    }
+}
+void ge::KeyManager::assign_key(const Input input, const std::string& id) {
     // check if key is already assigned
     if (!keys.contains(id)) {
-        keys[id].key = key;
+        keys[id].input = input;
         return;
     }
-    const auto old_key = keys.at(id).key;
-    keys[id].key = key;
+    const auto old_key = keys.at(id).input;
+    keys[id].input = input;
     for (const auto sub : keys.at(id).subscribers) {
         for (size_t i = 0; i < subscribers[old_key].size(); ++i) {
             if (subscribers[old_key][i].id == sub) {
@@ -77,7 +105,7 @@ void ge::KeyManager::assign_key(const KeyboardKey key, const std::string& id) {
                 const auto event = subscribers[old_key][i].type;
                 subscribers[old_key].erase(subscribers[old_key].begin() + static_cast<long>(i));
                 auto subscriber = Subscriber{.type = event, .callback = std::move(callback), .id = sub};
-                subscribers[key].push_back(std::move(subscriber));
+                subscribers[input].push_back(std::move(subscriber));
                 break;
             }
         }
@@ -95,10 +123,20 @@ void ge::notify_keyboard_press_system(const KeyManager& manager) {
             if (!manager.disabled_groups.empty() && manager.is_disabled(sub.id)) {
                 continue;
             }
-            using ST = KeyboardEvent;
-            if ((sub.type == ST::PRESS && IsKeyPressed(fst)) || (sub.type == ST::RELEASE && IsKeyReleased(fst)) || (sub.type == ST::UP && IsKeyUp(fst)) ||
-                (sub.type == ST::DOWN && IsKeyDown(fst))) {
-                sub.callback();
+            using ST = InputEvent;
+            switch (fst.type) {
+            case InputType::KEYBOARD:
+                if ((sub.type == ST::PRESS && IsKeyPressed(fst.key)) || (sub.type == ST::RELEASE && IsKeyReleased(fst.key)) ||
+                    (sub.type == ST::UP && IsKeyUp(fst.key)) || (sub.type == ST::DOWN && IsKeyDown(fst.key))) {
+                    sub.callback();
+                }
+                break;
+            case InputType::MOUSE:
+                if ((sub.type == ST::PRESS && IsMouseButtonPressed(fst.button)) || (sub.type == ST::RELEASE && IsMouseButtonReleased(fst.button)) ||
+                    (sub.type == ST::UP && IsMouseButtonUp(fst.button)) || (sub.type == ST::DOWN && IsMouseButtonDown(fst.button))) {
+                    sub.callback();
+                }
+                break;
             }
         }
     }

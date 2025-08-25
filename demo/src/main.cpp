@@ -39,12 +39,12 @@ auto main() -> int {
     generate_templates(registry);
     generate_scenes(scene_manager);
     scene_manager.load_scene("def");
-    key_manager.assign_key(KEY_D, "essing");
-    key_manager.assign_key(KEY_J, "ch_scene");
+    key_manager.assign_key(ge::Input::keyboard(KEY_D), "essing");
+    key_manager.assign_key(ge::Input::keyboard(KEY_J), "ch_scene");
     ge::logger.log(ge::LogLevel::INFO, scene_manager.get_current_scene());
-    key_manager.subscribe(ge::KeyboardEvent::PRESS, "ch_scene", [&] { scene_manager.load_scene("second"); });
-    key_manager.subscribe(ge::KeyboardEvent::PRESS, "essing", [&]() { console.add_log(ge::LogLevel::INFO, "TEST"); });
-    key_manager.assign_key(KEY_Q, "essing");
+    key_manager.subscribe(ge::InputEvent::PRESS, "ch_scene", [&] { scene_manager.load_scene("second"); });
+    key_manager.subscribe(ge::InputEvent::PRESS, "essing", [&]() { console.add_log(ge::LogLevel::INFO, "TEST"); });
+    key_manager.assign_key(ge::Input::keyboard(KEY_Q), "essing");
  while (!WindowShouldClose()) {
         console.empty_logger();
         BeginDrawing();

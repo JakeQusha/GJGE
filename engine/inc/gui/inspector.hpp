@@ -91,21 +91,24 @@ struct Inspector {
             ImGui::End();
             return;
         }
-        //show highlight around selected entity
+        // show highlight around selected entity
         if (registry.all_of<comp::Sprite>(*current_entity)) {
-            const auto && [sprite,tr] = ge::get<comp::Sprite>(registry, *current_entity);
+            const auto&& [sprite, tr] = ge::get<comp::Sprite>(registry, *current_entity);
             if (sprite.texture) {
                 const auto rect = sprite.texture->rect_multi(sprite.id);
                 const auto width = std::abs(rect.width) * std::abs(tr.global_scale.x);
                 const auto height = std::abs(rect.height) * std::abs(tr.global_scale.y);
                 const auto [x, y] = Vector2Multiply(sprite.offset, Vector2(width, height));
-                DrawRectangleLinesEx({std::round(tr.global_position.x - x), std::round(tr.global_position.y - y), width, height},5, GREEN);
+                DrawRectangleLinesEx({std::round(tr.global_position.x - x), std::round(tr.global_position.y - y), width, height}, 5, GREEN);
             } else {
-                DrawEllipseLines(static_cast<int>(std::round(tr.global_position.x)),static_cast<int>(std::round(tr.global_position.y)),10*tr.global_scale.x,10*tr.global_scale.y,GREEN);
+                DrawEllipseLines(static_cast<int>(std::round(tr.global_position.x)), static_cast<int>(std::round(tr.global_position.y)), 10 * tr.global_scale.x,
+                                 10 * tr.global_scale.y, GREEN);
             }
         } else {
             const auto& tr = registry.get<comp::Transform2D>(*current_entity);
-            DrawEllipseLines(static_cast<int>(std::round(tr.global_position.x)),static_cast<int>(std::round(tr.global_position.y)),10*tr.global_scale.x,10*tr.global_scale.y,GREEN);        }
+            DrawEllipseLines(static_cast<int>(std::round(tr.global_position.x)), static_cast<int>(std::round(tr.global_position.y)), 10 * tr.global_scale.x,
+                             10 * tr.global_scale.y, GREEN);
+        }
         display_entity_info();
 
         // Bottom part of the right column
@@ -121,7 +124,7 @@ private:
         if (ImGui::BeginMenu("Entity")) {
             if (ImGui::MenuItem("New Entity")) {
                 logger.log(LogLevel::INFO, "New Entity Created");
-                create(registry,"New entity");
+                create(registry, "New entity");
             }
 
             if (ImGui::BeginMenu("New Entity From Template")) {

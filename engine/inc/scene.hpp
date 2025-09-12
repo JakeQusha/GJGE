@@ -40,7 +40,8 @@ class SceneManager {
     entt::registry& registry;
 
 public:
-    SceneManager(entt::registry& registry);
+    bool freeze = false;
+    explicit SceneManager(entt::registry& registry);
 
     void make_scene(const char* name, Scene_recipe_t&& setup, Scene_recipe_t&& update, Scene_recipe_t&& clean) const;
 

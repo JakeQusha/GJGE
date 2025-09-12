@@ -62,57 +62,7 @@ struct Inspector {
             return;
         }
         if (ImGui::BeginMenuBar()) {
-            if (ImGui::BeginMenu("Entity")) {
-                if (ImGui::MenuItem("New Entity")) {
-                    logger.log(LogLevel::INFO, "New Entity Created");
-                    const auto entity = registry.create();
-                    registry.emplace<InspectorIntegration>(entity, "New entity");
-                }
-
-                if (ImGui::BeginMenu("New Entity From Template")) {
-                    for (const auto& key : registry.ctx().get<AssetManager>().get_all<Template>() | std::views::keys) {
-                        if (ImGui::MenuItem(key.c_str())) {
-                            instantiate(registry, key.c_str());
-                        }
-                    }
-                    ImGui::EndMenu();
-                }
-
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Component")) {
-                ImGui::SeparatorText("Filter");
-                auto i = 0u;
-                (
-                    [&]() {
-                        ImGui::Checkbox(Component::name, &component_filter[i++]);
-                    }(),
-                    ...);
-                ImGui::EndMenu();
-            }
-            if (ImGui::BeginMenu("Scene")) {
-                if (ImGui::BeginMenu("Load Scene")) {
-                    for (const auto& key : registry.ctx().get<AssetManager>().get_all<Scene>() | std::views::keys) {
-                        if (ImGui::MenuItem(key.c_str())) {
-                            registry.ctx().get<SceneManager>().load_scene(key.c_str());
-                        }
-                    }
-                    ImGui::EndMenu();
-                }
-                ImGui::SeparatorText("Danger Zone");
-                if (ImGui::BeginMenu("Force Scene")) {
-                    for (const auto& key : registry.ctx().get<AssetManager>().get_all<Scene>() | std::views::keys) {
-                        if (ImGui::MenuItem(key.c_str())) {
-                            auto& sm = registry.ctx().get<SceneManager>();
-                            sm.unload_scene(true);
-                            sm.load_scene(key.c_str());
-                        }
-                    }
-                    ImGui::EndMenu();
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMenuBar();
+            display_menu_bar();
         }
         if (current_entity && !registry.valid(*current_entity)) {
             current_entity = std::nullopt;
@@ -129,7 +79,7 @@ struct Inspector {
 
         // Begin right column
         ImGui::BeginGroup();
-        const ImVec2 rightColumnSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
+        const auto rightColumnSize = ImVec2(ImGui::GetContentRegionAvail().x, ImGui::GetContentRegionAvail().y);
         if (!current_entity) {
             ImGui::SetCursorPosX(ImGui::GetWindowWidth() - (rightColumnSize.x / 2) - 70);
             ImGui::Text("No entity selected");
@@ -149,6 +99,60 @@ struct Inspector {
     }
 
 private:
+    void display_menu_bar() { // NOLINT(*-function-cognitive-complexity)
+        if (ImGui::BeginMenu("Entity")) {
+            if (ImGui::MenuItem("New Entity")) {
+                logger.log(LogLevel::INFO, "New Entity Created");
+                const auto entity = registry.create();
+                registry.emplace<InspectorIntegration>(entity, "New entity");
+            }
+
+            if (ImGui::BeginMenu("New Entity From Template")) {
+                for (const auto& key : registry.ctx().get<AssetManager>().get_all<Template>() | std::views::keys) {
+                    if (ImGui::MenuItem(key.c_str())) {
+                        instantiate(registry, key.c_str());
+                    }
+                }
+                ImGui::EndMenu();
+            }
+
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Component")) {
+            ImGui::SeparatorText("Filter");
+            auto i = 0u;
+            (
+                [&]() {
+                    ImGui::Checkbox(Component::name, &component_filter[i++]);
+                }(),
+                ...);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Scene")) {
+            ImGui::Checkbox("Freeze", &registry.ctx().get<SceneManager>().freeze);
+            if (ImGui::BeginMenu("Load Scene")) {
+                for (const auto& key : registry.ctx().get<AssetManager>().get_all<Scene>() | std::views::keys) {
+                    if (ImGui::MenuItem(key.c_str())) {
+                        registry.ctx().get<SceneManager>().load_scene(key.c_str());
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::SeparatorText("Danger Zone");
+            if (ImGui::BeginMenu("Force Scene")) {
+                for (const auto& key : registry.ctx().get<AssetManager>().get_all<Scene>() | std::views::keys) {
+                    if (ImGui::MenuItem(key.c_str())) {
+                        auto& sm = registry.ctx().get<SceneManager>();
+                        sm.unload_scene(true);
+                        sm.load_scene(key.c_str());
+                    }
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMenu();
+        }
+        ImGui::EndMenuBar();
+    }
     void display_entity_list() {
         ImGui::SetNextItemWidth(-FLT_MIN);
         ImGui::SetNextItemShortcut(ImGuiMod_Ctrl | ImGuiKey_F, ImGuiInputFlags_Tooltip);
@@ -234,7 +238,7 @@ private:
         ImGui::EndChild();
     }
 
-    void display_entity_list_entry(entt::entity entity) { // NOLINT
+    void display_entity_list_entry(entt::entity entity) { // NOLINT(*-function-cognitive-complexity)
         if (!registry.all_of<InspectorIntegration>(entity)) {
             registry.emplace<InspectorIntegration>(entity, "Unknown");
         }
@@ -333,7 +337,7 @@ private:
 
     static void iterate_components(auto&& f) { (f.template operator()<Component>(), ...); }
 
-    void display_entity_info() { // NOLINT
+    void display_entity_info() { // NOLINT(*-function-cognitive-complexity)
         entt::entity entity = *current_entity;
         ImGui::BeginChild("Entity Inspector", ImVec2(0, (is_creator_open ? (ImGui::GetWindowHeight() * .7f) : 0)), ImGuiChildFlags_Border,
                           ImGuiWindowFlags_None);

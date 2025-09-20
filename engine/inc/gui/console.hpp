@@ -1,4 +1,5 @@
 #pragma once
+#ifdef GJGE_DEV_CONSOLE
 #include "logs.hpp"
 #include <functional>
 #include <vector>
@@ -292,3 +293,4 @@ public:
     }
 };
 } // namespace ge
+#endif

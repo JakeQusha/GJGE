@@ -1,5 +1,6 @@
 #include "entity_management.hpp"
 #include "components/transform2D.hpp"
+#include "components/relations.hpp"
 #include "gui/inspector.hpp"
 
 static std::queue<entt::entity> kill_queue;
@@ -22,7 +23,9 @@ void ge::kill(const entt::entity entity) {
 }
 auto ge::create(entt::registry& registry, const char* name) -> entt::entity {
     const auto entity = registry.create();
+#ifdef GJGE_DEV_TOOLS
     registry.emplace<InspectorIntegration>(entity, name);
+#endif
     registry.emplace<comp::Transform2D>(entity);
     return entity;
 }

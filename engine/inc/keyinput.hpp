@@ -12,8 +12,8 @@ struct Input {
         KeyboardKey key;
         MouseButton button;
     };
-    static auto keyboard(const KeyboardKey key) -> Input;
-    static auto mouse(const MouseButton button) -> Input;
+    static auto keyboard(KeyboardKey key) -> Input;
+    static auto mouse(MouseButton button) -> Input;
     bool operator==(const Input& i) const;
     bool operator<(const Input& i) const;
 };

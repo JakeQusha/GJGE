@@ -2,6 +2,7 @@
 #include "raylib.h"
 #include <imgui.h>
 #include <raymath.h>
+#ifdef GJGE_DEV_TOOLS
 void ge::draw_debug_colliders(entt::registry& registry) {
     auto view = registry.view<comp::AABBCollider, comp::Transform2D>();
     for (auto&& [entity, collider, transform] : view.each()) {
@@ -12,6 +13,7 @@ void ge::draw_debug_colliders(entt::registry& registry) {
         DrawCircle(static_cast<int>(center.x), static_cast<int>(center.y), 2.f, RED);
     }
 }
+#endif
 
 static void process_AABBCollision(entt::registry& registry, entt::entity first, entt::entity second) {
     auto&& [first_collider, first_transform] = registry.get<ge::comp::AABBCollider, ge::comp::Transform2D>(first);
@@ -65,8 +67,9 @@ auto ge::comp::AABBCollider::get_intersection(const Transform2D& transform, cons
     y = (y < first_size.y ? y : 0.f);
     return {first_corner.x + first_size.x /2 > second_corner.x + second_size.x /2 ? x : -x, first_corner.y + first_size.y /2 > second_corner.y + second_size.y /2 ? y : -y};
 }
-
+#ifdef GJGE_DEV_TOOLS
 void ge::comp::AABBCollider::inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {
     ImGui::DragFloat2("Offset:", &offset.x, 0.01f);
     ImGui::DragFloat2("Size:", &size.x, 1, 0);
 }
+#endif

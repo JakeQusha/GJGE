@@ -19,7 +19,10 @@ struct Sprite {
     Vector2 offset{0.5f, 0.5f};
     Color tint = WHITE;
     int8_t layer = 0;
+#ifdef GJGE_DEV_TOOLS
     void inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity);
+#endif
+
 };
 } // namespace comp
 

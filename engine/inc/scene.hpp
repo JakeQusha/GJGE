@@ -40,7 +40,9 @@ class SceneManager {
     entt::registry& registry;
 
 public:
+#ifdef GJGE_DEV_TOOLS
     bool freeze = false;
+#endif
     explicit SceneManager(entt::registry& registry);
 
     void make_scene(const char* name, Scene_recipe_t&& setup, Scene_recipe_t&& update, Scene_recipe_t&& clean) const;

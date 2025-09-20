@@ -16,7 +16,9 @@ struct Transform2D {
     Vector2 _last_position{0, 0};
     float _last_rotation{.0f};
     Vector2 _last_scale{1, 1};
+#ifdef GJGE_DEV_TOOLS
     void inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity);
+#endif
 };
 } // namespace comp
 void calculate_global_transform(entt::registry& registry);

@@ -1,5 +1,5 @@
 #pragma once
-
+#ifdef GJGE_DEV_TOOLS
 #include <imgui_internal.h>
 #include <entt.hpp>
 #include <imgui.h>
@@ -457,3 +457,4 @@ private:
 };
 
 } // namespace ge
+#endif

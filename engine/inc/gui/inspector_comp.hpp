@@ -1,4 +1,5 @@
 #pragma once
+#ifdef GJGE_DEV_TOOLS
 #include <imgui.h>
 #include "assets/asset_manager.hpp"
 template <typename T>
@@ -16,3 +17,4 @@ void display_asset_manager_picker(const char* asset_name, std::optional<T>& asse
         ImGui::OpenPopup(asset_name);
     }
 }
+#endif

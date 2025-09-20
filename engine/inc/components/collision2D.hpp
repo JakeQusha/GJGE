@@ -17,11 +17,14 @@ struct AABBCollider {
     [[nodiscard]] auto get_corner(const Transform2D& transform) const -> Vector2;
     [[nodiscard]] auto get_size(const Transform2D& transform) const -> Vector2;
     [[nodiscard]] auto get_intersection(const Transform2D& transform, const AABBCollider& other, const Transform2D& other_transform) const -> Vector2;
+#ifdef GJGE_DEV_TOOLS
     void inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity);
+#endif
 };
 } // namespace comp
 
 void evaluate_AABB_Collisions(entt::registry& registry);
-
+#ifdef GJGE_DEV_TOOLS
 void draw_debug_colliders(entt::registry& registry);
+#endif
 } // namespace ge

@@ -1,4 +1,5 @@
 #pragma once
+#ifdef GJGE_DEV_TOOLS
 #include <entt.hpp>
 #include <imgui.h>
 namespace ge {
@@ -36,3 +37,4 @@ struct Toolbox {
     }
 };
 } // namespace ge
+#endif

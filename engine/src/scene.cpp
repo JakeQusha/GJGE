@@ -29,7 +29,11 @@ void ge::SceneManager::unload_scene(const bool destroy_persistent_entities) {
     current_scene = nullptr;
 }
 void ge::SceneManager::tick() const {
+#ifdef GJGE_DEV_TOOLS
     if (current_scene != nullptr && !freeze) {
+#else
+    if (current_scene != nullptr) {
+#endif
         current_scene->update(registry, registry.ctx().get<AssetManager>());
     }
 }

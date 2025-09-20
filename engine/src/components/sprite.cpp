@@ -1,5 +1,6 @@
 #include "components/sprite.hpp"
 #include <raymath.h>
+#ifdef GJGE_DEV_TOOLS
 void ge::comp::Sprite::inspect(entt::registry& registry, entt::entity entity) {
     auto& am = registry.ctx().get<AssetManager>();
     display_asset_manager_picker<MultiTexture>("Texture", texture, am);
@@ -7,6 +8,7 @@ void ge::comp::Sprite::inspect(entt::registry& registry, entt::entity entity) {
     ImGui::DragScalar("Sprite id", ImGuiDataType_U16, &id, 1.0f);
     ImGui::DragScalar("Layer",ImGuiDataType_S8, &layer, 1.0f);
 }
+#endif
 void ge::draw_sprites(entt::registry& registry) {
     registry.sort<comp::Sprite>([](const comp::Sprite& lhs, const comp::Sprite& rhs) { return lhs.layer < rhs.layer; });
     auto view = registry.view<const comp::Sprite, comp::Transform2D>();

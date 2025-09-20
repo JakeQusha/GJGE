@@ -1,4 +1,5 @@
 #pragma once
+#ifdef GJGE_DEV_CONSOLE
 #include "console.hpp"
 #include <entt.hpp>
 namespace ge {
@@ -29,3 +30,4 @@ struct fps_command {
 };
 
 } // namespace ge
+#endif

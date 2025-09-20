@@ -34,10 +34,16 @@ target_include_directories(Imgui PUBLIC ${IMGUI_DIR} ${IMGUI_RAYLIB_DIR})
 set_target_properties(Imgui PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Imgui,INTERFACE_INCLUDE_DIRECTORIES>)
 
 #enet
-set(ENET_DIR ${CMAKE_CURRENT_SOURCE_DIR}/enet)
-add_library(Enet STATIC ${ENET_DIR}/impl/enet.cpp)
-target_include_directories(Enet PRIVATE ${ENET_DIR}/impl)
-target_include_directories(Enet PUBLIC ${ENET_DIR}/include)
-set_target_properties(Enet PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Enet,INTERFACE_INCLUDE_DIRECTORIES>)
+if(GJGE_FEATURE_NETWORKING)
+    set(ENET_DIR ${CMAKE_CURRENT_SOURCE_DIR}/enet)
+    add_library(Enet STATIC ${ENET_DIR}/impl/enet.cpp)
+    target_include_directories(Enet PRIVATE ${ENET_DIR}/impl)
+    target_include_directories(Enet PUBLIC ${ENET_DIR}/include)
+    set_target_properties(Enet PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Enet,INTERFACE_INCLUDE_DIRECTORIES>)
+endif ()
 
+#box2d
+if(GJGE_FEATURE_BOX2D)
+    add_subdirectory(box2d)
+endif ()
 include(FetchContent)

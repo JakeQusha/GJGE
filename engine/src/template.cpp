@@ -11,7 +11,9 @@ auto ge::instantiate(entt::registry& registry, const char* template_name,const c
     auto& asset_manager = registry.ctx().get<AssetManager>();
     const auto& _template = asset_manager.get<Template>(template_name);
     const auto entity = create(registry, name != nullptr ? name : _template.name);
+#ifdef GJGE_DEV_TOOLS
     registry.get<InspectorIntegration>(entity)._template= _template.name;
+#endif
     _template.recipe(registry, asset_manager, entity);
     return entity;
 }

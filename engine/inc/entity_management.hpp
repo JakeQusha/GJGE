@@ -67,7 +67,7 @@ auto safe_emplace(entt::registry& registry, entt::entity entity, const Args&... 
         T::dependencies.add_all(registry, entity);
         return T::dependencies.build_tuple(registry, entity, raw_emplace<T>(registry, entity, args...));
     } else {
-        return raw_emplace<T>(registry, entity, args...)raylib c;
+        return raw_emplace<T>(registry, entity, args...);
     }
 }
 template <typename T, typename... Args>

@@ -1,5 +1,5 @@
 #include <algorithm>
-#include <raylib.h>
+#include <rl.hpp>
 #include "keyinput.hpp"
 #include <ranges>
 
@@ -126,14 +126,14 @@ void ge::notify_keyboard_press_system(const KeyManager& manager) {
             using ST = InputEvent;
             switch (fst.type) {
             case InputType::KEYBOARD:
-                if ((sub.type == ST::PRESS && IsKeyPressed(fst.key)) || (sub.type == ST::RELEASE && IsKeyReleased(fst.key)) ||
-                    (sub.type == ST::UP && IsKeyUp(fst.key)) || (sub.type == ST::DOWN && IsKeyDown(fst.key))) {
+                if ((sub.type == ST::PRESS && rl::Keyboard::IsKeyPressed(fst.key)) || (sub.type == ST::RELEASE && rl::Keyboard::IsKeyReleased(fst.key)) ||
+                    (sub.type == ST::UP && rl::Keyboard::IsKeyUp(fst.key)) || (sub.type == ST::DOWN && rl::Keyboard::IsKeyDown(fst.key))) {
                     sub.callback();
                 }
                 break;
             case InputType::MOUSE:
-                if ((sub.type == ST::PRESS && IsMouseButtonPressed(fst.button)) || (sub.type == ST::RELEASE && IsMouseButtonReleased(fst.button)) ||
-                    (sub.type == ST::UP && IsMouseButtonUp(fst.button)) || (sub.type == ST::DOWN && IsMouseButtonDown(fst.button))) {
+                if ((sub.type == ST::PRESS && rl::Mouse::IsButtonPressed(fst.button)) || (sub.type == ST::RELEASE && rl::Mouse::IsButtonReleased(fst.button)) ||
+                    (sub.type == ST::UP && rl::Mouse::IsButtonUp(fst.button)) || (sub.type == ST::DOWN && rl::Mouse::IsButtonDown(fst.button))) {
                     sub.callback();
                 }
                 break;

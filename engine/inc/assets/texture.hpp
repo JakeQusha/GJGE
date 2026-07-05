@@ -1,6 +1,6 @@
 #pragma once
 
-#include <raylib.h>
+#include <rl.hpp>
 #include <cstdint>
 #define ImTxt(texture) (*reinterpret_cast<ImTextureID*>(&texture))
 namespace ge {

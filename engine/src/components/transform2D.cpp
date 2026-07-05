@@ -1,6 +1,6 @@
 #include "components/transform2D.hpp"
 #include "components/relations.hpp"
-#include "raymath.h"
+#include <rl.hpp>
 #include <imgui.h>
 #ifdef GJGE_DEV_TOOLS
 void ge::comp::Transform2D::inspect([[maybe_unused]] entt::registry& registry, [[maybe_unused]] entt::entity entity) {
@@ -29,11 +29,10 @@ static void calculate_transform(entt::registry& registry, entt::entity entity, g
     }
     {
         auto& parent_transform = registry.get<ge::comp::Transform2D>(parent);
-        transform._last_position = transform.global_position = Vector2Add(
-            parent_transform.global_position, Vector2Rotate(transform.position, parent_transform.global_rotation));
+        transform._last_position = transform.global_position =
+            parent_transform.global_position + transform.position.Rotate(parent_transform.global_rotation);
         transform._last_rotation = transform.global_rotation = parent_transform.global_rotation + transform.rotation;
-        transform._last_scale = transform.global_scale =
-            Vector2Multiply(parent_transform.global_scale, transform.scale);
+        transform._last_scale = transform.global_scale = parent_transform.global_scale * transform.scale;
     }
 next:
 

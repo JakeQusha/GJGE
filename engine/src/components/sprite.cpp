@@ -1,5 +1,5 @@
 #include "components/sprite.hpp"
-#include <raymath.h>
+#include <rl.hpp>
 #ifdef GJGE_DEV_TOOLS
 void ge::comp::Sprite::inspect(entt::registry& registry, entt::entity entity) {
     auto& am = registry.ctx().get<AssetManager>();
@@ -23,7 +23,8 @@ void ge::draw_sprites(entt::registry& registry) {
         rect.height *= transform.global_scale.y < 0 ? -1 : 1;
         auto width = std::abs(rect.width) * std::abs(transform.global_scale.x);
         auto height = std::abs(rect.height) * std::abs(transform.global_scale.y);
-        DrawTexturePro(txt.texture, rect, Rectangle{std::round(transform.global_position.x), std::round(transform.global_position.y), width, height},
-                       Vector2Multiply(sprite.offset, Vector2(width, height)), RAD2DEG * transform.global_rotation, sprite.tint);
+        rl::TextureUnmanaged(txt.texture)
+            .Draw(rect, Rectangle{std::round(transform.global_position.x), std::round(transform.global_position.y), width, height},
+                  sprite.offset.Multiply(Vector2(width, height)), RAD2DEG * transform.global_rotation, sprite.tint);
     }
 }

@@ -12,7 +12,7 @@
 #include "components/relations.hpp"
 #include "components/sprite.hpp"
 
-#include <raymath.h>
+#include <rl.hpp>
 namespace ge {
 struct InspectorIntegration {
     std::string debug_name{};

@@ -1,6 +1,6 @@
 file(GLOB_RECURSE GJGE_SOURCES  ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_library(GJGE ${GJGE_SOURCES})
-target_link_libraries(GJGE Entt raylib Imgui)
+target_link_libraries(GJGE Entt RaylibCpp Imgui)
 if(GJGE_FEATURE_NETWORKING)
     target_link_libraries(GJGE Enet)
 endif()

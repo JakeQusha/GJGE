@@ -1,7 +1,6 @@
 #include "components/collision2D.hpp"
-#include "raylib.h"
+#include <rl.hpp>
 #include <imgui.h>
-#include <raymath.h>
 #ifdef GJGE_DEV_TOOLS
 void ge::draw_debug_colliders(entt::registry& registry) {
     auto view = registry.view<comp::AABBCollider, comp::Transform2D>();
@@ -9,7 +8,7 @@ void ge::draw_debug_colliders(entt::registry& registry) {
         auto corner = collider.get_corner(transform);
         auto size = collider.get_size(transform);
         auto center = collider.get_center(transform);
-        DrawRectangleLines(static_cast<int>(corner.x), static_cast<int>(corner.y), static_cast<int>(size.x), static_cast<int>(size.y), BLUE);
+        rl::Rectangle(corner.x, corner.y, size.x, size.y).DrawLines(BLUE);
         DrawCircle(static_cast<int>(center.x), static_cast<int>(center.y), 2.f, RED);
     }
 }
@@ -46,15 +45,17 @@ void ge::evaluate_AABB_Collisions(entt::registry& registry) {
     }
 }
 
-auto ge::comp::AABBCollider::get_center(const Transform2D& transform) const -> Vector2 { return get_corner(transform) + get_size(transform) / 2; }
-auto ge::comp::AABBCollider::get_corner(const Transform2D& transform) const -> Vector2 {
+auto ge::comp::AABBCollider::get_center(const Transform2D& transform) const -> rl::Vector2 {
+    return get_corner(transform) + get_size(transform) * 0.5f;
+}
+auto ge::comp::AABBCollider::get_corner(const Transform2D& transform) const -> rl::Vector2 {
     return {transform.global_position.x - (offset.x * size.x * std::abs(transform.global_scale.x)),
             transform.global_position.y - (offset.y * size.y * std::abs(transform.global_scale.y))};
 }
-auto ge::comp::AABBCollider::get_size(const Transform2D& transform) const -> Vector2 {
+auto ge::comp::AABBCollider::get_size(const Transform2D& transform) const -> rl::Vector2 {
     return {size.x * std::abs(transform.global_scale.x), size.y * std::abs(transform.global_scale.y)};
 }
-auto ge::comp::AABBCollider::get_intersection(const Transform2D& transform, const AABBCollider& other, const Transform2D& other_transform) const -> Vector2 {
+auto ge::comp::AABBCollider::get_intersection(const Transform2D& transform, const AABBCollider& other, const Transform2D& other_transform) const -> rl::Vector2 {
     const auto first_corner = get_corner(transform);
     const auto first_size = get_size(transform);
     const auto second_corner = other.get_corner(other_transform);

@@ -1,5 +1,5 @@
 #raylib
-set(RAYLIB_VERSION 5.5)
+set(RAYLIB_VERSION 6.0)
 find_package(raylib ${RAYLIB_VERSION} QUIET)
 if (NOT raylib_FOUND)
     include(FetchContent)
@@ -19,6 +19,26 @@ endif()
 
 # this magic formula silences warnings from raylib
 set_target_properties(raylib PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:raylib,INTERFACE_INCLUDE_DIRECTORIES>)
+
+#raylib-cpp (header-only C++ wrapper that sits on top of raylib)
+set(RAYLIB_CPP_VERSION 6.0.2)
+include(FetchContent)
+FetchContent_Declare(
+        raylib_cpp
+        URL https://github.com/RobLoach/raylib-cpp/archive/refs/tags/v${RAYLIB_CPP_VERSION}.tar.gz
+        DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_GetProperties(raylib_cpp)
+if (NOT raylib_cpp_POPULATED)
+    set(FETCHCONTENT_QUIET NO)
+    FetchContent_Populate(raylib_cpp)
+endif()
+# header-only: expose the headers and pull in raylib itself, don't build examples/tests
+add_library(RaylibCpp INTERFACE)
+target_include_directories(RaylibCpp INTERFACE ${raylib_cpp_SOURCE_DIR}/include)
+target_link_libraries(RaylibCpp INTERFACE raylib)
+# silence -Wconversion/-Wpedantic coming from the wrapper headers
+set_target_properties(RaylibCpp PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:RaylibCpp,INTERFACE_INCLUDE_DIRECTORIES>)
 
 #EnTT
 add_library(Entt INTERFACE)

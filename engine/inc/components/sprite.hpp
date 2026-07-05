@@ -1,6 +1,6 @@
 #pragma once
 
-#include <raylib.h>
+#include <rl.hpp>
 #include <imgui.h>
 #include <optional>
 #include <entt.hpp>
@@ -16,7 +16,7 @@ struct Sprite {
     static constexpr auto name = "Sprite";
     std::optional<MultiTexture> texture = std::nullopt;
     uint16_t id = 0;
-    Vector2 offset{0.5f, 0.5f};
+    rl::Vector2 offset{0.5f, 0.5f};
     Color tint = WHITE;
     int8_t layer = 0;
 #ifdef GJGE_DEV_TOOLS

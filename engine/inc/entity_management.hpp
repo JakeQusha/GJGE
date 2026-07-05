@@ -43,24 +43,40 @@ auto get(entt::registry& registry, entt::entity entity) -> decltype(auto) {
     }
 }
 template <typename T, typename... Args>
+auto raw_emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto) {
+    if constexpr (std::is_empty_v<T>) {
+        return registry.emplace<T>(entity);
+    } else {
+        return registry.emplace<T>(entity, args...);
+    }
+}
+template <typename T, typename... Args>
+auto raw_emplace_or_replace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto) {
+    if constexpr (std::is_empty_v<T>) {
+        return registry.emplace_or_replace<T>(entity);
+    } else {
+        return registry.emplace_or_replace<T>(entity, args...);
+    }
+}
+template <typename T, typename... Args>
 auto safe_emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto) {
     if (registry.all_of<T>(entity)) {
         return get<T>(registry, entity);
     }
     if constexpr (HasDependencies<T>) {
         T::dependencies.add_all(registry, entity);
-        return T::dependencies.build_tuple(registry, entity, registry.emplace<T>(entity, args...));
+        return T::dependencies.build_tuple(registry, entity, raw_emplace<T>(registry, entity, args...));
     } else {
-        return registry.emplace<T>(entity, args...);
+        return raw_emplace<T>(registry, entity, args...)raylib c;
     }
 }
 template <typename T, typename... Args>
 auto emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto) {
     if constexpr (HasDependencies<T>) {
         T::dependencies.add_all(registry, entity);
-        return T::dependencies.build_tuple(registry, entity, registry.emplace_or_replace<T>(entity, args...));
+        return T::dependencies.build_tuple(registry, entity, raw_emplace_or_replace<T>(registry, entity, args...));
     } else {
-        return registry.emplace_or_replace<T>(entity, args...);
+        return raw_emplace_or_replace<T>(registry, entity, args...);
     }
 }
 

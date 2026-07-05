@@ -74,7 +74,7 @@ struct Inspector {
 
         // Split main window horizontally
 
-        ImGui::BeginChild("Entity List", ImVec2{220, 0}, ImGuiChildFlags_Border | ImGuiChildFlags_ResizeX | ImGuiChildFlags_NavFlattened);
+        ImGui::BeginChild("Entity List", ImVec2{220, 0}, ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX | ImGuiChildFlags_NavFlattened);
         display_entity_list();
         ImGui::EndChild();
 
@@ -208,7 +208,7 @@ private:
             wait = false;
             return;
         }
-        ImGui::BeginChild("Component creator", ImVec2(0, 0), ImGuiChildFlags_Border);
+        ImGui::BeginChild("Component creator", ImVec2(0, 0), ImGuiChildFlags_Borders);
         ImGui::SeparatorText("Component creator");
 
         static const char* chosen_component_name = "None";
@@ -359,7 +359,7 @@ private:
 
     void display_entity_info() { // NOLINT(*-function-cognitive-complexity)
         entt::entity entity = *current_entity;
-        ImGui::BeginChild("Entity Inspector", ImVec2(0, (is_creator_open ? (ImGui::GetWindowHeight() * .7f) : 0)), ImGuiChildFlags_Border,
+        ImGui::BeginChild("Entity Inspector", ImVec2(0, (is_creator_open ? (ImGui::GetWindowHeight() * .7f) : 0)), ImGuiChildFlags_Borders,
                           ImGuiWindowFlags_None);
         ImGui::BeginGroup();
 

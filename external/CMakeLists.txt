@@ -62,8 +62,4 @@ if(GJGE_FEATURE_NETWORKING)
     set_target_properties(Enet PROPERTIES INTERFACE_SYSTEM_INCLUDE_DIRECTORIES $<TARGET_PROPERTY:Enet,INTERFACE_INCLUDE_DIRECTORIES>)
 endif ()
 
-#box2d
-if(GJGE_FEATURE_BOX2D)
-    add_subdirectory(box2d)
-endif ()
 include(FetchContent)

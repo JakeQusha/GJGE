@@ -14,7 +14,7 @@ void ge::draw_sprites(entt::registry& registry) {
     auto view = registry.view<const comp::Sprite, comp::Transform2D>();
     view.use<comp::Sprite>();
     for (auto&& [entity, sprite, transform] : view.each()) {
-        if (!sprite.texture) {
+        if (!sprite.texture || sprite.texture->texture.id == 0) {
             continue;
         }
         const auto& txt = sprite.texture.value();

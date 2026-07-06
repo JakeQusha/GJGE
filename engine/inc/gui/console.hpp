@@ -10,10 +10,10 @@ namespace ge {
 using LogCallback = const std::function<void(LogLevel, const char*)>&;
 using Params = std::vector<std::string>;
 template <typename T>
-concept ConsoleCommand = requires(const char* command, entt::registry& registry, LogCallback add_log, Params& params) {
+concept ConsoleCommand = requires(entt::registry& registry, LogCallback add_log, Params& params) {
     { T::name } -> std::convertible_to<const char*>;
     { T::execute(params, registry, add_log) };
-    { std::is_empty_v<T> };
+    requires std::is_empty_v<T>;
 };
 
 template <ConsoleCommand... AvailableCommand>
@@ -224,7 +224,7 @@ public:
                        ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_HorizontalScrollbar)) {
             PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4, 1));
             for (const auto& log : log_history) {
-                if ((!show_logs && !log.command_caused) || !filter.PassFilter(log.log)) {
+                if ((!show_logs && !log.command_caused) || !filter.PassFilter(log.log.c_str())) {
                     continue;
                 }
 
@@ -233,22 +233,22 @@ public:
                     if (!log_filter.show_err) {
                         continue;
                     }
-                    TextColored(ImVec4(1, 0, 0, 1), "%s", log.log);
+                    TextColored(ImVec4(1, 0, 0, 1), "%s", log.log.c_str());
                     break;
                 case LogLevel::INFO:
                     if (!log_filter.show_info) {
                         continue;
                     }
-                    TextColored(ImVec4(0, 1, 1, 1), "%s", log.log);
+                    TextColored(ImVec4(0, 1, 1, 1), "%s", log.log.c_str());
                     break;
                 case LogLevel::DEBUG:
                     if (!log_filter.show_debug) {
                         continue;
                     }
-                    TextColored(ImVec4(1, 1, 1, .5), "%s", log.log);
+                    TextColored(ImVec4(1, 1, 1, .5), "%s", log.log.c_str());
                     break;
                 case LogLevel::NONE:
-                    TextUnformatted(log.log);
+                    TextUnformatted(log.log.c_str());
                     break;
                 }
             }

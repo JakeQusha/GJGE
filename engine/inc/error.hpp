@@ -1,14 +1,15 @@
 #pragma once
+#include <cstdlib>
 #include <expected>
-#include <string>
 #include <print>
+#include <string>
 
 namespace ge {
 using Error = std::string;
 template <typename T>
 using Expected = std::expected<T, Error>;
 
-[[noreturn]] inline void throw_error(const Error& error) {
+[[noreturn]] inline void fatal_error(const Error& error) {
     std::println(stderr, "Error: {}", error);
     std::exit(1);
 }
@@ -16,7 +17,7 @@ using Expected = std::expected<T, Error>;
 template <typename T>
 auto unwrap(const Expected<T>& exp) -> T {
     if (!exp.has_value()) {
-        throw_error(exp.error());
+        fatal_error(exp.error());
     }
 
     return exp.value();

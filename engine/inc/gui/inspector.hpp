@@ -26,7 +26,7 @@ concept InspectableComponent = requires(T t, entt::registry& registry, entt::ent
 } || requires() {
     { T::name } -> std::convertible_to<const char*>;
     { T::inspect() };
-    { std::is_empty_v<T> };
+    requires std::is_empty_v<T>;
 };
 
 template <InspectableComponent T>
@@ -50,6 +50,7 @@ struct Inspector {
     bool is_open = false;
     char temp_name[32]{};
     bool wait = false;
+    const char* chosen_component_name = "None";
 
     explicit Inspector(entt::registry& registry) : registry(registry) {}
 
@@ -91,23 +92,18 @@ struct Inspector {
             ImGui::End();
             return;
         }
-        // show highlight around selected entity
-        if (registry.all_of<comp::Sprite>(*current_entity)) {
-            const auto&& [sprite, tr] = ge::get<comp::Sprite>(registry, *current_entity);
-            if (sprite.texture) {
-                const auto rect = sprite.texture->rect_multi(sprite.id);
-                const auto width = std::abs(rect.width) * std::abs(tr.global_scale.x);
-                const auto height = std::abs(rect.height) * std::abs(tr.global_scale.y);
-                const auto [x, y] = Vector2Multiply(sprite.offset, Vector2(width, height));
-                DrawRectangleLinesEx({std::round(tr.global_position.x - x), std::round(tr.global_position.y - y), width, height}, 5, GREEN);
+        if (const auto* tr = registry.try_get<comp::Transform2D>(*current_entity)) {
+            const auto* sprite = registry.try_get<comp::Sprite>(*current_entity);
+            if (sprite != nullptr && sprite->texture) {
+                const auto rect = sprite->texture->rect_multi(sprite->id);
+                const auto width = std::abs(rect.width) * std::abs(tr->global_scale.x);
+                const auto height = std::abs(rect.height) * std::abs(tr->global_scale.y);
+                const auto [x, y] = Vector2Multiply(sprite->offset, Vector2(width, height));
+                DrawRectangleLinesEx({std::round(tr->global_position.x - x), std::round(tr->global_position.y - y), width, height}, 5, GREEN);
             } else {
-                DrawEllipseLines(static_cast<int>(std::round(tr.global_position.x)), static_cast<int>(std::round(tr.global_position.y)), 10 * tr.global_scale.x,
-                                 10 * tr.global_scale.y, GREEN);
+                DrawEllipseLines(static_cast<int>(std::round(tr->global_position.x)), static_cast<int>(std::round(tr->global_position.y)),
+                                 10 * tr->global_scale.x, 10 * tr->global_scale.y, GREEN);
             }
-        } else {
-            const auto& tr = registry.get<comp::Transform2D>(*current_entity);
-            DrawEllipseLines(static_cast<int>(std::round(tr.global_position.x)), static_cast<int>(std::round(tr.global_position.y)), 10 * tr.global_scale.x,
-                             10 * tr.global_scale.y, GREEN);
         }
         display_entity_info();
 
@@ -191,8 +187,7 @@ private:
             if (ImGui::BeginPopupContextWindow()) {
                 if (ImGui::MenuItem("Create new entity")) {
                     logger.log(LogLevel::INFO, "New Entity Created");
-                    const auto entity = registry.create();
-                    registry.emplace<InspectorIntegration>(entity, "New entity");
+                    create(registry, "New entity");
                 }
                 ImGui::EndPopup();
             }
@@ -211,7 +206,6 @@ private:
         ImGui::BeginChild("Component creator", ImVec2(0, 0), ImGuiChildFlags_Borders);
         ImGui::SeparatorText("Component creator");
 
-        static const char* chosen_component_name = "None";
         const ImVec2 text_size = ImGui::CalcTextSize(chosen_component_name);
         ImGui::BeginChild("type", ImVec2(-120, 20), ImGuiWindowFlags_None);
         ImGui::Text("Chosen type: ");
@@ -294,7 +288,7 @@ private:
                 if (!registry.all_of<Comp>(entity)) {
                     return;
                 }
-                ImGui::Text(Comp::name);
+                ImGui::TextUnformatted(Comp::name);
             });
             ImGui::EndTooltip();
         }
@@ -306,42 +300,20 @@ private:
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("child")) {
                 const entt::entity child = *static_cast<entt::entity*>(payload->Data);
-                auto* child_comp = registry.try_get<comp::Child>(child);
+                const auto* child_comp = registry.try_get<comp::Child>(child);
                 if (!child_comp) {
-                    entt::entity test_e = entity;
-                    while (true) {
-                        child_comp = registry.try_get<comp::Child>(test_e);
-                        if (!child_comp) {
-                            break;
-                        }
-                        test_e = child_comp->parent;
-                        if (test_e == child) {
-                            goto DnDEnd;
-                        }
+                    if (!is_ancestor(child, entity)) {
+                        add_relation(registry, entity, child);
                     }
-                    add_relation(registry, entity, child);
-                    goto DnDEnd;
-                }
-                const entt::entity parent = child_comp->parent;
-                if (parent != entity) {
-                    entt::entity test_e = entity;
-                    while (true) {
-                        child_comp = registry.try_get<comp::Child>(test_e);
-                        if (!child_comp) {
-                            break;
-                        }
-                        test_e = child_comp->parent;
-                        if (test_e == child) {
-                            goto DnDEnd;
-                        }
+                } else if (const entt::entity parent = child_comp->parent; parent != entity) {
+                    if (!is_ancestor(child, entity)) {
+                        remove_relation(registry, parent, child);
+                        add_relation(registry, entity, child);
                     }
+                } else {
                     remove_relation(registry, parent, child);
-                    add_relation(registry, entity, child);
-                    goto DnDEnd;
                 }
-                remove_relation(registry, parent, child);
             }
-        DnDEnd:
             ImGui::EndDragDropTarget();
         }
         if (open) {
@@ -356,6 +328,17 @@ private:
     }
 
     static void iterate_components(auto&& f) { (f.template operator()<Component>(), ...); }
+
+    [[nodiscard]] auto is_ancestor(entt::entity ancestor, entt::entity descendant) const -> bool {
+        const auto* child_comp = registry.try_get<comp::Child>(descendant);
+        while (child_comp != nullptr) {
+            if (child_comp->parent == ancestor) {
+                return true;
+            }
+            child_comp = registry.try_get<comp::Child>(child_comp->parent);
+        }
+        return false;
+    }
 
     void display_entity_info() { // NOLINT(*-function-cognitive-complexity)
         entt::entity entity = *current_entity;

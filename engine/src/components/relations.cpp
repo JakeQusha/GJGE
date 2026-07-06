@@ -41,10 +41,10 @@ auto ge::remove_relation(entt::registry& registry, entt::entity parent, entt::en
     return false;
 }
 
-/// is called under the hood by the ge::remove function
+/// is called under the hood by the ge::kill_unsafe function
 void ge::relations_call_on_delete_entity(entt::registry& registry, entt::entity entity) {
     if (registry.all_of<comp::Parent>(entity)) {
-        auto& parent = registry.get<comp::Parent>(entity);
+        auto parent = registry.get<comp::Parent>(entity);
         for (auto child : parent.children) {
             if (!registry.valid(child)) {
                 continue;
@@ -54,7 +54,7 @@ void ge::relations_call_on_delete_entity(entt::registry& registry, entt::entity 
         }
     }
     if (registry.all_of<comp::Child>(entity)) {
-        const auto& child = registry.get<comp::Child>(entity);
+        const auto child = registry.get<comp::Child>(entity);
         remove_relation(registry, child.parent, entity);
     }
 }

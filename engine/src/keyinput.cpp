@@ -1,21 +1,17 @@
 #include <algorithm>
 #include <rl.hpp>
 #include "keyinput.hpp"
+#include "error.hpp"
+#include <format>
 #include <ranges>
+#include <vector>
 
 [[nodiscard]] auto ge::KeyManager::make_subscriber(callback_t&& callback, const InputEvent type) -> Subscriber {
-    static subscriber_id_t id = 0;
-    return Subscriber{.type = type, .callback = std::move(callback), .id = id++};
+    return Subscriber{.type = type, .callback = std::move(callback), .id = next_id++};
 }
 
-// auto ge::KeyManager::subscribe(const KeyboardEvent type, const KeyboardKey key, callback_t&& callback) -> subscriber_id_t {
-//     auto subscriber = make_subscriber(std::move(callback), type);
-//     const auto id = subscriber.id;
-//     subscribers[key].push_back(std::move(subscriber));
-//     return id;
-// }
 auto ge::KeyManager::subscribe(const InputEvent type, const std::string& key, const std::string& group, callback_t&& callback) -> subscriber_id_t {
-    const auto id = subscribe(type, key, std::forward<decltype(callback)>(callback));
+    const auto id = subscribe(type, key, std::move(callback));
     groups[group].insert(id);
     id_to_group[id] = group;
     return id;
@@ -25,6 +21,9 @@ void ge::KeyManager::unsubscribe(subscriber_id_t id) {
     for (auto& subs : subscribers | std::views::values) {
         std::erase_if(subs, [id](const auto& sub) { return sub.id == id; });
     }
+    for (auto& ak : keys | std::views::values) {
+        std::erase(ak.subscribers, id);
+    }
     if (id_to_group.contains(id)) {
         groups.at(id_to_group.at(id)).erase(id);
         id_to_group.erase(id);
@@ -33,38 +32,57 @@ void ge::KeyManager::unsubscribe(subscriber_id_t id) {
 void ge::KeyManager::wipe(const bool wipe_binds) {
     if (wipe_binds) {
         keys.clear();
+    } else {
+        for (auto& ak : keys | std::views::values) {
+            ak.subscribers.clear();
+        }
     }
-    for (auto& subs : subscribers | std::views::values) {
-        subs.clear();
-    }
+    subscribers.clear();
     groups.clear();
     id_to_group.clear();
     disabled_groups.clear();
 }
 void ge::KeyManager::wipe_group(const std::string& group) {
-    for (auto id : groups.at(group)) {
+    const auto group_it = groups.find(group);
+    if (group_it == groups.end()) {
+        return;
+    }
+    for (auto id : group_it->second) {
         for (auto& subs : subscribers | std::views::values) {
             std::erase_if(subs, [id](const auto& sub) { return sub.id == id; });
         }
+        for (auto& ak : keys | std::views::values) {
+            std::erase(ak.subscribers, id);
+        }
         id_to_group.erase(id);
     }
-    groups.at(group).clear();
+    group_it->second.clear();
 }
 
 auto ge::KeyManager::subscribe(const InputEvent type, const std::string& key, callback_t&& callback) -> subscriber_id_t {
+    const auto key_it = keys.find(key);
+    if (key_it == keys.end()) {
+        fatal_error(std::format("KeyManager: no input assigned for '{}', call assign_key first", key));
+    }
     auto subscriber = make_subscriber(std::move(callback), type);
     const auto id = subscriber.id;
-    auto& ak = keys.at(key);
+    auto& ak = key_it->second;
     subscribers[ak.input].push_back(std::move(subscriber));
     ak.subscribers.push_back(id);
     return id;
 }
 
-auto ge::KeyManager::get_key(const std::string& id) const -> Input { return keys.at(id).input; }
+auto ge::KeyManager::get_key(const std::string& id) const -> Input {
+    const auto it = keys.find(id);
+    if (it == keys.end()) {
+        fatal_error(std::format("KeyManager: no input assigned for '{}'", id));
+    }
+    return it->second.input;
+}
 
 auto ge::Input::keyboard(const KeyboardKey key) -> Input { return Input{.type = InputType::KEYBOARD, .key = key}; }
 auto ge::Input::mouse(const MouseButton button) -> Input { return Input{.type = InputType::MOUSE, .button = button}; }
-bool ge::Input::operator==(const Input& i) const {
+auto ge::Input::operator==(const Input& i) const -> bool {
     if (type != i.type) {
         return false;
     }
@@ -77,7 +95,7 @@ bool ge::Input::operator==(const Input& i) const {
         return false;
     }
 }
-bool ge::Input::operator<(const Input& i) const {
+auto ge::Input::operator<(const Input& i) const -> bool {
     if (type != i.type) {
         return type < i.type;
     }
@@ -118,26 +136,31 @@ void ge::KeyManager::enable_group(const std::string& group) { disabled_groups.er
 }
 
 void ge::notify_keyboard_press_system(const KeyManager& manager) {
-    for (const auto& [fst, snd] : manager.subscribers) {
-        for (const auto& sub : snd) {
+    std::vector<KeyManager::callback_t> to_fire;
+    for (const auto& [input, subs] : manager.subscribers) {
+        for (const auto& sub : subs) {
             if (!manager.disabled_groups.empty() && manager.is_disabled(sub.id)) {
                 continue;
             }
             using ST = InputEvent;
-            switch (fst.type) {
+            bool fire = false;
+            switch (input.type) {
             case InputType::KEYBOARD:
-                if ((sub.type == ST::PRESS && rl::Keyboard::IsKeyPressed(fst.key)) || (sub.type == ST::RELEASE && rl::Keyboard::IsKeyReleased(fst.key)) ||
-                    (sub.type == ST::UP && rl::Keyboard::IsKeyUp(fst.key)) || (sub.type == ST::DOWN && rl::Keyboard::IsKeyDown(fst.key))) {
-                    sub.callback();
-                }
+                fire = (sub.type == ST::PRESS && rl::Keyboard::IsKeyPressed(input.key)) || (sub.type == ST::RELEASE && rl::Keyboard::IsKeyReleased(input.key)) ||
+                       (sub.type == ST::UP && rl::Keyboard::IsKeyUp(input.key)) || (sub.type == ST::DOWN && rl::Keyboard::IsKeyDown(input.key));
                 break;
             case InputType::MOUSE:
-                if ((sub.type == ST::PRESS && rl::Mouse::IsButtonPressed(fst.button)) || (sub.type == ST::RELEASE && rl::Mouse::IsButtonReleased(fst.button)) ||
-                    (sub.type == ST::UP && rl::Mouse::IsButtonUp(fst.button)) || (sub.type == ST::DOWN && rl::Mouse::IsButtonDown(fst.button))) {
-                    sub.callback();
-                }
+                fire = (sub.type == ST::PRESS && rl::Mouse::IsButtonPressed(input.button)) ||
+                       (sub.type == ST::RELEASE && rl::Mouse::IsButtonReleased(input.button)) ||
+                       (sub.type == ST::UP && rl::Mouse::IsButtonUp(input.button)) || (sub.type == ST::DOWN && rl::Mouse::IsButtonDown(input.button));
                 break;
             }
+            if (fire) {
+                to_fire.push_back(sub.callback);
+            }
         }
+    }
+    for (auto& callback : to_fire) {
+        callback();
     }
 }

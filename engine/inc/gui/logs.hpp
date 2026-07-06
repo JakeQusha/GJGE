@@ -1,52 +1,42 @@
 #pragma once
-#include <queue>
 #include <cstdint>
-#include <cstring>
+#include <queue>
+#include <string>
 namespace ge {
 enum class LogLevel : uint8_t { ERR, INFO, DEBUG, NONE };
 struct Log {
     LogLevel ll;
-    char* log;
+    std::string log;
     bool command_caused;
 
-    Log() = delete;
+    Log(LogLevel log_level, const char* message, bool command_caused)
+        : ll(log_level), log(std::string(prefix(log_level)) + message), command_caused(command_caused) {}
 
-    Log(const Log&) = delete;
-
-    Log(Log&& other) noexcept : ll(other.ll), log(other.log), command_caused(other.command_caused) {
-        other.log = nullptr;
-    }
-
-    Log(LogLevel log_level, const char* message, bool command_caused) : ll(log_level), command_caused(command_caused) {
-
-        size_t const message_len = strlen(message);
-        log = new char[9 + message_len];
-        uint8_t offset = 0;
+private:
+    static auto prefix(LogLevel ll) -> const char* {
         switch (ll) {
         case LogLevel::ERR:
-            strcpy(log, "[Error] ");
-            offset = 8;
-            break;
+            return "[Error] ";
+        case LogLevel::INFO:
+            return "[Info] ";
+        case LogLevel::DEBUG:
+            return "[Debug] ";
         case LogLevel::NONE:
             break;
-        case LogLevel::INFO:
-            strcpy(log, "[Info] ");
-            offset = 7;
-            break;
-        case LogLevel::DEBUG:
-            strcpy(log, "[Debug] ");
-            offset = 8;
-            break;
         }
-        strcpy(log + offset, message);
+        return "";
     }
-
-    ~Log() { delete log; }
 };
 
 struct Logger {
+    static constexpr size_t max_logs = 2048;
     std::queue<Log> logs;
-    void log(LogLevel ll, const char* message) { logs.emplace(ll, message, false); }
+    void log(LogLevel ll, const char* message) {
+        logs.emplace(ll, message, false);
+        while (logs.size() > max_logs) {
+            logs.pop();
+        }
+    }
 };
 inline Logger logger;
 } // namespace ge

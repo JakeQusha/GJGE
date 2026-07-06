@@ -2,8 +2,13 @@
 #include "components/transform2D.hpp"
 #include "components/relations.hpp"
 #include "gui/inspector.hpp"
+#include <vector>
 
-static std::queue<entt::entity> kill_queue;
+namespace {
+struct KillQueue {
+    std::vector<entt::entity> entities;
+};
+} // namespace
 
 void ge::kill_unsafe(entt::registry& registry, entt::entity entity) {
     if (!registry.valid(entity)) {
@@ -13,13 +18,17 @@ void ge::kill_unsafe(entt::registry& registry, entt::entity entity) {
     registry.destroy(entity);
 }
 void ge::empty_kill_queue(entt::registry& registry) {
-    while (!kill_queue.empty()) {
-        kill_unsafe(registry,kill_queue.front());
-        kill_queue.pop();
+    auto* queue = registry.ctx().find<KillQueue>();
+    if (queue == nullptr) {
+        return;
     }
+    for (size_t i = 0; i < queue->entities.size(); ++i) {
+        kill_unsafe(registry, queue->entities[i]);
+    }
+    queue->entities.clear();
 }
-void ge::kill(const entt::entity entity) {
-    kill_queue.push(entity);
+void ge::kill(entt::registry& registry, const entt::entity entity) {
+    registry.ctx().emplace<KillQueue>().entities.push_back(entity);
 }
 auto ge::create(entt::registry& registry, const char* name) -> entt::entity {
     const auto entity = registry.create();

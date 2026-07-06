@@ -15,28 +15,28 @@ void ge::comp::Transform2D::inspect([[maybe_unused]] entt::registry& registry, [
 
 static void calculate_transform(entt::registry& registry, entt::entity entity, ge::comp::Transform2D& transform, // NOLINT(*-no-recursion)
                                 entt::entity parent, bool force) {
-    if (!force && transform._last_position.x == transform.position.x &&
-        transform._last_position.y == transform.position.y && transform.rotation == transform._last_rotation &&
-        transform.scale.x == transform._last_scale.x && transform.scale.y == transform._last_scale.y) {
-        goto next;
+    const bool dirty = transform.position.x != transform._last_position.x || transform.position.y != transform._last_position.y ||
+                       transform.rotation != transform._last_rotation || transform.scale.x != transform._last_scale.x ||
+                       transform.scale.y != transform._last_scale.y;
+    if (force || dirty) {
+        force = true;
+        // cache the *local* values that the dirty check above compares against
+        transform._last_position = transform.position;
+        transform._last_rotation = transform.rotation;
+        transform._last_scale = transform.scale;
+        if (parent == entt::null) {
+            transform.global_position = transform.position;
+            transform.global_rotation = transform.rotation;
+            transform.global_scale = transform.scale;
+        } else {
+            const auto& parent_transform = registry.get<ge::comp::Transform2D>(parent);
+            transform.global_position = parent_transform.global_position + transform.position.Rotate(parent_transform.global_rotation);
+            transform.global_rotation = parent_transform.global_rotation + transform.rotation;
+            transform.global_scale = parent_transform.global_scale * transform.scale;
+        }
     }
-    force = true;
-    if (parent == entt::null) {
-        transform._last_position = transform.global_position = transform.position;
-        transform.global_rotation = transform.rotation;
-        transform.global_scale = transform.scale;
-        goto next;
-    }
-    {
-        auto& parent_transform = registry.get<ge::comp::Transform2D>(parent);
-        transform._last_position = transform.global_position =
-            parent_transform.global_position + transform.position.Rotate(parent_transform.global_rotation);
-        transform._last_rotation = transform.global_rotation = parent_transform.global_rotation + transform.rotation;
-        transform._last_scale = transform.global_scale = parent_transform.global_scale * transform.scale;
-    }
-next:
 
-    auto* parent_comp = registry.try_get<ge::comp::Parent>(entity);
+    const auto* parent_comp = registry.try_get<ge::comp::Parent>(entity);
     if (!parent_comp) {
         return;
     }

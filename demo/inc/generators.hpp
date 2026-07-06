@@ -4,4 +4,4 @@
 
 void generate_templates(entt::registry& registry);
 
-void generate_scenes(const ge::SceneManager& scene_manager);
+void generate_scenes(ge::SceneManager& scene_manager);

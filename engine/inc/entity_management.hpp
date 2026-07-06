@@ -1,11 +1,13 @@
 #pragma once
 
 #include <entt.hpp>
+#include <tuple>
+#include <utility>
 #include "gui/logs.hpp"
 
 namespace ge {
 template <typename T, typename... Args>
-auto safe_emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto);
+auto safe_emplace(entt::registry& registry, entt::entity entity, Args&&... args) -> decltype(auto);
 
 template <typename... T>
 struct Dependencies {
@@ -29,7 +31,7 @@ concept HasDependencies = requires {
     { T::dependencies.add_all };
 };
 
-void kill(entt::entity entity);
+void kill(entt::registry& registry, entt::entity entity);
 void kill_unsafe(entt::registry& registry, entt::entity entity);
 void empty_kill_queue(entt::registry& registry);
 auto create(entt::registry& registry, const char* name) -> entt::entity;
@@ -43,40 +45,40 @@ auto get(entt::registry& registry, entt::entity entity) -> decltype(auto) {
     }
 }
 template <typename T, typename... Args>
-auto raw_emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto) {
+auto raw_emplace(entt::registry& registry, entt::entity entity, Args&&... args) -> decltype(auto) {
     if constexpr (std::is_empty_v<T>) {
         return registry.emplace<T>(entity);
     } else {
-        return registry.emplace<T>(entity, args...);
+        return registry.emplace<T>(entity, std::forward<Args>(args)...);
     }
 }
 template <typename T, typename... Args>
-auto raw_emplace_or_replace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto) {
+auto raw_emplace_or_replace(entt::registry& registry, entt::entity entity, Args&&... args) -> decltype(auto) {
     if constexpr (std::is_empty_v<T>) {
         return registry.emplace_or_replace<T>(entity);
     } else {
-        return registry.emplace_or_replace<T>(entity, args...);
+        return registry.emplace_or_replace<T>(entity, std::forward<Args>(args)...);
     }
 }
 template <typename T, typename... Args>
-auto safe_emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto) {
+auto safe_emplace(entt::registry& registry, entt::entity entity, Args&&... args) -> decltype(auto) {
     if (registry.all_of<T>(entity)) {
         return get<T>(registry, entity);
     }
     if constexpr (HasDependencies<T>) {
         T::dependencies.add_all(registry, entity);
-        return T::dependencies.build_tuple(registry, entity, raw_emplace<T>(registry, entity, args...));
+        return T::dependencies.build_tuple(registry, entity, raw_emplace<T>(registry, entity, std::forward<Args>(args)...));
     } else {
-        return raw_emplace<T>(registry, entity, args...);
+        return raw_emplace<T>(registry, entity, std::forward<Args>(args)...);
     }
 }
 template <typename T, typename... Args>
-auto emplace(entt::registry& registry, entt::entity entity, const Args&... args) -> decltype(auto) {
+auto emplace(entt::registry& registry, entt::entity entity, Args&&... args) -> decltype(auto) {
     if constexpr (HasDependencies<T>) {
         T::dependencies.add_all(registry, entity);
-        return T::dependencies.build_tuple(registry, entity, raw_emplace_or_replace<T>(registry, entity, args...));
+        return T::dependencies.build_tuple(registry, entity, raw_emplace_or_replace<T>(registry, entity, std::forward<Args>(args)...));
     } else {
-        return raw_emplace_or_replace<T>(registry, entity, args...);
+        return raw_emplace_or_replace<T>(registry, entity, std::forward<Args>(args)...);
     }
 }
 

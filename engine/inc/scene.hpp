@@ -5,13 +5,13 @@
 #include <functional>
 #define GEN_SCENES(name) inline void name(ge::SceneManager& scene_manager)
 #define SCENE(name)                                                                                                    \
-    extern void gen_##name##_scene(const ge::SceneManager&);                                                           \
+    extern void gen_##name##_scene(ge::SceneManager&);                                                                 \
     gen_##name##_scene(scene_manager);
 #define SCENE_DEF(name)                                                                                                \
     static void setup(entt::registry&, ge::AssetManager&);                                                             \
     static void update(entt::registry&, ge::AssetManager&);                                                            \
     static void clean(entt::registry&, ge::AssetManager&);                                                             \
-    void gen_##name##_scene(const ge::SceneManager& scene_manager) {                                                   \
+    void gen_##name##_scene(ge::SceneManager& scene_manager) {                                                         \
         scene_manager.make_scene(#name, setup, update, clean);                                                         \
     }
 #define SETUP                                                                                                          \
@@ -45,7 +45,7 @@ public:
 #endif
     explicit SceneManager(entt::registry& registry);
 
-    void make_scene(const char* name, Scene_recipe_t&& setup, Scene_recipe_t&& update, Scene_recipe_t&& clean) const;
+    void make_scene(const char* name, Scene_recipe_t&& setup, Scene_recipe_t&& update, Scene_recipe_t&& clean);
 
     void load_scene(const char* name);
 

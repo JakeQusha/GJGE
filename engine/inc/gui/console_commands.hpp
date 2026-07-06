@@ -1,6 +1,9 @@
 #pragma once
 #ifdef GJGE_DEV_CONSOLE
 #include "console.hpp"
+#include <raylib.h>
+#include <charconv>
+#include <format>
 #include <entt.hpp>
 namespace ge {
 struct hi_command {
@@ -24,8 +27,15 @@ struct fps_command {
         if (params.empty()) {
             return;
         }
-        SetTargetFPS(std::stoi(params.at(0)));
-        add_log(LogLevel::INFO, std::format("Set fps to {}", params.at(0)).c_str());
+        const auto& param = params.at(0);
+        int fps = 0;
+        const auto [ptr, ec] = std::from_chars(param.data(), param.data() + param.size(), fps);
+        if (ec != std::errc{} || ptr != param.data() + param.size() || fps < 0) {
+            add_log(LogLevel::ERR, std::format("Invalid fps value: {}", param).c_str());
+            return;
+        }
+        SetTargetFPS(fps);
+        add_log(LogLevel::INFO, std::format("Set fps to {}", fps).c_str());
     }
 };
 

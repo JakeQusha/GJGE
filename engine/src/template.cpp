@@ -4,7 +4,7 @@
 #include "gui/inspector.hpp"
 void ge::make_template(entt::registry& registry, const char* name, Recipe_t&& recipe) {
     auto& asset_manager = registry.ctx().get<AssetManager>();
-    asset_manager.emplace<Template>(name, name, std::forward<Recipe_t>(recipe));
+    asset_manager.emplace<Template>(name, name, std::move(recipe));
 }
 
 auto ge::instantiate(entt::registry& registry, const char* template_name,const char* name) -> entt::entity {

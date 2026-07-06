@@ -1,5 +1,17 @@
 #include "assets/animation.hpp"
+#include <charconv>
 #include <sstream>
+
+namespace {
+template <typename T>
+auto parse_number(const std::string& token, T& out) -> bool {
+    const auto* begin = token.data();
+    const auto* end = token.data() + token.size();
+    const auto [ptr, ec] = std::from_chars(begin, end, out);
+    return ec == std::errc{} && ptr == end;
+}
+} // namespace
+
 auto ge::Animation::import_from_str(const std::string& input) -> bool {
     std::stringstream ss(input);
     std::string token;
@@ -7,28 +19,13 @@ auto ge::Animation::import_from_str(const std::string& input) -> bool {
         return false;
     }
     texture = token;
-    if (!std::getline(ss, token, ';')) {
+    if (!std::getline(ss, token, ';') || !parse_number(token, frames)) {
         return false;
     }
-    try {
-        frames = static_cast<uint16_t>(std::stoi(token));
-    } catch (std::invalid_argument& e) {
+    if (!std::getline(ss, token, ';') || !parse_number(token, sample_rate)) {
         return false;
     }
-    if (!std::getline(ss, token, ';')) {
-        return false;
-    }
-    try {
-        sample_rate = static_cast<uint8_t>(std::stoi(token));
-    } catch (std::invalid_argument& e) {
-        return false;
-    }
-    if (!std::getline(ss, token, ';')) {
-        return false;
-    }
-    try {
-        start_frame = static_cast<uint16_t>(std::stoi(token));
-    } catch (std::invalid_argument& e) {
+    if (!std::getline(ss, token, ';') || !parse_number(token, start_frame)) {
         return false;
     }
     return true;

@@ -1,6 +1,8 @@
 #include "components/collision2D.hpp"
 #include <rl.hpp>
 #include <imgui.h>
+#include <utility>
+#include <vector>
 #ifdef GJGE_DEV_TOOLS
 void ge::draw_debug_colliders(entt::registry& registry) {
     auto view = registry.view<comp::AABBCollider, comp::Transform2D>();
@@ -14,33 +16,46 @@ void ge::draw_debug_colliders(entt::registry& registry) {
 }
 #endif
 
-static void process_AABBCollision(entt::registry& registry, entt::entity first, entt::entity second) {
+static auto aabb_overlap(entt::registry& registry, entt::entity first, entt::entity second) -> bool {
     auto&& [first_collider, first_transform] = registry.get<ge::comp::AABBCollider, ge::comp::Transform2D>(first);
     auto&& [second_collider, second_transform] = registry.get<ge::comp::AABBCollider, ge::comp::Transform2D>(second);
     const auto first_corner = first_collider.get_corner(first_transform);
     const auto first_size = first_collider.get_size(first_transform);
     const auto second_corner = second_collider.get_corner(second_transform);
     const auto second_size = second_collider.get_size(second_transform);
-    if (first_corner.x < second_corner.x + second_size.x && second_corner.x < first_corner.x + first_size.x &&
-        first_corner.y < second_corner.y + second_size.y && second_corner.y < first_corner.y + first_size.y) {
-        if (first_collider.on_collision_callback) {
-            (*first_collider.on_collision_callback)(registry, first, second);
-        }
-        if (second_collider.on_collision_callback) {
-            (*second_collider.on_collision_callback)(registry, second, first);
-        }
-    }
-
+    return first_corner.x < second_corner.x + second_size.x && second_corner.x < first_corner.x + first_size.x &&
+           first_corner.y < second_corner.y + second_size.y && second_corner.y < first_corner.y + first_size.y;
 }
 
 void ge::evaluate_AABB_Collisions(entt::registry& registry) {
-    auto view = registry.view<comp::AABBCollider>();
-    if (view.empty()) {
-        return;
+    const auto view = registry.view<comp::AABBCollider, comp::Transform2D>();
+    std::vector<entt::entity> entities;
+    for (const auto entity : view) {
+        entities.push_back(entity);
     }
-    for (auto i = 0u; i < view.size() - 1; i++) {
-        for (auto j = i + 1; j < view.size(); ++j) {
-            process_AABBCollision(registry, view.begin()[i], view.begin()[j]);
+    std::vector<std::pair<entt::entity, entt::entity>> collisions;
+    for (size_t i = 0; i + 1 < entities.size(); ++i) {
+        for (size_t j = i + 1; j < entities.size(); ++j) {
+            if (aabb_overlap(registry, entities[i], entities[j])) {
+                collisions.emplace_back(entities[i], entities[j]);
+            }
+        }
+    }
+    const auto has_collider = [&registry](entt::entity entity) {
+        return registry.valid(entity) && registry.all_of<comp::AABBCollider>(entity);
+    };
+    for (const auto& [first, second] : collisions) {
+        if (!has_collider(first) || !has_collider(second)) {
+            continue;
+        }
+        if (const auto callback = registry.get<comp::AABBCollider>(first).on_collision_callback) {
+            (*callback)(registry, first, second);
+        }
+        if (!has_collider(first) || !has_collider(second)) {
+            continue;
+        }
+        if (const auto callback = registry.get<comp::AABBCollider>(second).on_collision_callback) {
+            (*callback)(registry, second, first);
         }
     }
 }
